@@ -11,16 +11,16 @@ My early thinking is that this project will follow these steps:
     - What are the minimum Azure components required to get a node?
     - How much do these cost?
     - Have we looked at all angles are there any other alternative architectures?
-    - 
 
 ### Step 2) High level design
     - High level description of proposed solution
     - Logical Architecture diagram + Explanation
     - Description of each component
-    - Description of data flow
+    - Description of logical data flow
     - High level risk benefit
     - Cost estimate
     - Outline of set up steps
+    - Outline of acceptance testing procedure
 
 ### Step 3) Low level design
     - Detailed description of component configuration
@@ -28,7 +28,7 @@ My early thinking is that this project will follow these steps:
     - Detailed breakdown of costs
     - Detailed description of security risks and mitigations
     - Detailed implementation steps
-    - Outline testing procedure
+    - Detailed testing procedure
 
 ### Step 4) Implementation
     - As built documentation
