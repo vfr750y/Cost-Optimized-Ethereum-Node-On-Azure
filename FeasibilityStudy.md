@@ -46,12 +46,17 @@ CPU - 8 vCPUs (4 physical cores)
 Memory - 32 GB RAM
 Storage - Minimum 2TB - Recommended 4TB
 
+How much data is sent to the internet per month? - between 1 and 3 TB.
+
 ## Basic cost analysis
 Using the Azure pricing calculator to give a basic estimate of costs:
 
-| Item name    | Item value  | Cost ($ p/m)         |Description                |
-|:-------------|:----------  |:---------------------|:--------------------------|
-| VM           | D8sv5       | 129                  | 8vCPUs 32GB RAM           |
+| Item name    | Item value      | Cost (USD p/m) |Description                             |
+|:-------------|:----------------|:---------------|:---------------------------------------|
+| VM           | D8sv5           | 129            | 8vCPUs 32GB RAM                        |
+| Managed Disk | 2TB SSD(Premium)| 259            | 7500 IOPS 250MB/Sec                    |
+| Data egress  | 2TB             | 114            | Internet based and routed over internet|
+| **Total**    |                 | **502**        |                                        |
 
 
 

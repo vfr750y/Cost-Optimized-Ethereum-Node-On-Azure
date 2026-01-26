@@ -11,7 +11,11 @@ My early thinking is that this project will follow these steps:
     - What are the minimum Azure components required to get a node?
     - How much do these cost?
     - Have we looked at all angles are there any other alternative architectures? - 
+           
             I.e. state healing / up-time / limit your peer count and save on these egress fees
+            Switch your Public IP's routing preference from "Microsoft Premium Global Network" to "Routing Preference: Internet (ISP).
+            You can disable certain types of discovery if you aren't a validator.
+            Are there Azure Alternatives to a VM - Kubernetes or Azure containers?
 
 ### Step 2) High level design
     - High level description of proposed solution
