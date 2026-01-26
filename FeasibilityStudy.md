@@ -47,6 +47,12 @@ Memory - 32 GB RAM
 Storage - Minimum 2TB - Recommended 4TB
 
 ## Basic cost analysis
+Using the Azure pricing calculator to give a basic estimate of costs:
+
+| Item name    | Item value  | Cost ($ p/m)         |Description                |
+|:-------------|:----------  |:---------------------|:--------------------------|
+| VM           | D8sv5       | 129                  | 8vCPUs 32GB RAM           |
+
 
 
 
