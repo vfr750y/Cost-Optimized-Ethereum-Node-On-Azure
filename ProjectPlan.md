@@ -10,7 +10,7 @@ My early thinking is that this project will follow these steps:
     - How does it communicate? 
     - What are the minimum Azure components required to get a node?
     - How much do these cost?
-    - Have we looked at all angles are there any other alternative architectures?
+    - Have we looked at all angles are there any other alternative architectures? - I.e. state healing / up-time.
 
 ### Step 2) High level design
     - High level description of proposed solution
