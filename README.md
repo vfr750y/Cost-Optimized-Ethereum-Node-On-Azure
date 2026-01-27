@@ -1,7 +1,7 @@
 # Ethereum Node on Azure
 ## Overview of project
 
-This project is going to be a proof of concept. The aim is to deploy an Ethererum node on Azure using terraform to deploy and configure the relevant Azure resources. My early thinking is that building an Ethereum node on Azure is essentially a matter of connecting a VM with the node software to the internet.
+This project is going to be a proof of concept. The aim is to deploy an Ethererum node on Azure using Github actions with Terraform cloud to deploy and configure the relevant Azure resources. My early thinking is that building an Ethereum node on Azure is essentially a matter of connecting a VM with the node software to the internet.
 
 I'm expecting this project to happen in these stages:
 
