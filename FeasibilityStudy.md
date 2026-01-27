@@ -77,7 +77,7 @@ Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 | **Total**    |                 | **333**        |                                        |
 
 
-## Sepolia Light node cost comparison.
+## Sepolia Light (e.g. Lodestar) node cost comparison.
 Storage - Minimum 2GB - With a light node, only the headers are synchronised.
 Memory - Max 1GB
 Data egress - <10GB per month
@@ -108,7 +108,7 @@ Full Node: Requires 10,000 to 100,000+ IOPS. A standard Azure File Share or even
 
 Light Node: Only tracks block headers and sync committee signatures. It requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
 
-So we can't realistically use ACI for a full node, but for out proof of concept it seems a good choice.
+So we can't realistically use ACI for a full node, but for a lightnode it seems a good choice.
 
 Here is the cost breakdown for an Azure container instance:
 
