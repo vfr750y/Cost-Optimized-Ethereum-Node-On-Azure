@@ -12,7 +12,7 @@ This project aims to provide benefits by doing the following:
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly.
 
 ## How does it communicate?
-The node discovers other nodes, then it connects with them via a handshake, then gossips with other nodes.
+The node discovers other nodes, then it connects with them via a handshake, then gossips with other nodes. A node will typically communicate with between 50 and 100 peers using default settings.
 For normal operations (there are a few edge cases) nodes communicate with other nodes on the peer-to-peer network (P2P).
 
 **Port configuration** 
@@ -46,14 +46,17 @@ Operating system - Linux
 Memory optimized - 8GB RAM per CPU
 CPU - 8 vCPUs (4 physical cores)
 Memory - 32 GB RAM
+For storage and internet egress estimates, see specific cost analysis for each client type below:
+
+
+## Basic cost analysis
+
+### Full node (default)
 Storage - Minimum 2TB - Recommended 4TB - 
 Note the default full node is deployed in pruned mode (not archive mode). The chain size for a Geth client is currently ~1.5TB 
 (A Geth client is a particular deployment of the ETH node written in Go)
-
-How much data is sent to the internet per month? - between 1 and 3 TB.
-
-## Basic cost analysis
-Using the Azure pricing calculator to give a basic estimate of costs:
+Data egress is estimated at between 1 and 3 TB per month.
+Using the Azure pricing calculator to give a basic estimate of costs for a full node (not archive):
 
 | Item name    | Item value      | Cost (USD p/m) |Description                             |
 |:-------------|:----------------|:---------------|:---------------------------------------|
@@ -62,8 +65,9 @@ Using the Azure pricing calculator to give a basic estimate of costs:
 | Data egress  | 2TB             | 114            | Internet based and routed over internet|
 | **Total**    |                 | **502**        |                                        |
 
-## What are the minimum Azure components required for a full (non-validating) node on Ethereum Sepolia testnet?
-
+## Sepolia testnet full node (default)?
+Storage - Minimum 1TB - Recommended 2TB (The current chain size for Sepolia is around 650GB depending on the client version).
+Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 ## Ethereum Light node cost comparison.
 
 
