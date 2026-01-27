@@ -3,12 +3,14 @@
 Building an Ethereum node on Azure is essentially a matter of connecting a VM with the node software to the internet.
 My early thinking is that this project will follow these steps:
 
-## Project plan
-### Step 1) Feasibility study
-### Step 2) High level design
-### Step 3) Low level design
-### Step 4) Implementation
-### Step 5) Project de-brief
+## Project stages
+[Core Solidity 1-25](core-solidity.md)
+### [Stage 1) Project plan](ProjectPlan.md)
+### [Stage 2) Feasibility study](FeasibilityStudy.md)
+### [Stage 3) High level design]()
+### [Stage 4) Low level design]()
+### [Stage 5) Implementation]()
+### [Stage 6) Project de-brief ]()
 
 ### Next steps
 We are on a limited budget so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them.
