@@ -6,7 +6,12 @@ This project aims to provide benefits by doing the following:
 - Providing a GitHub repository containing project plan, implementation steps and research findings.
 - Testing and documenting a method for installation
 - Research and minimise costs
-- Learning opportunity
+- Providing everyone with a free learning opportunity
+
+## What are the different types of Ethereum Nodes?
+Full node - Archive
+Full node - Default (pruned)
+Light node
 
 ## What is a full node?
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly.
