@@ -43,9 +43,9 @@ A third component called a validator can be added to the full node. The validato
 
 ### Recommended requirements
 Operating system - Linux
-Memory optimized - 8GB RAM per CPU
+Memory optimized - 8GB RAM per CPU 
 CPU - 8 vCPUs (4 physical cores)
-Memory - 32 GB RAM
+Memory - 32 GB RAM - Note: More RAM results in less disk IOPS allowing the node to perform fast enough to keep synchronised.
 For storage and internet egress estimates, see specific cost analysis for each client type below:
 
 
@@ -60,7 +60,7 @@ Using the Azure pricing calculator to give a basic estimate of costs for a full 
 
 | Item name    | Item value      | Cost (USD p/m) |Description                             |
 |:-------------|:----------------|:---------------|:---------------------------------------|
-| VM           | D8sv5           | 129            | 8vCPUs 32GB RAM                        |
+| VM           | D8sv5           | 129            | 8vCPUs 32GB RAM (3yr commitment)       |
 | Managed Disk | 2TB SSD(Premium)| 259            | 7500 IOPS 250MB/Sec                    |
 | Data egress  | 2TB             | 114            | Internet based and routed over internet|
 | **Total**    |                 | **502**        |                                        |
@@ -68,8 +68,22 @@ Using the Azure pricing calculator to give a basic estimate of costs for a full 
 ## Sepolia testnet full node (default)?
 Storage - Minimum 1TB - Recommended 2TB (The current chain size for Sepolia is around 650GB depending on the client version).
 Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
+
+| Item name    | Item value      | Cost (USD p/m) |Description                             |
+|:-------------|:----------------|:---------------|:---------------------------------------|
+| VM           | D8sv5           | 129            | 8vCPUs 32GB RAM  (3yr commitment)      |
+| Managed Disk | 1TB SSD(Premium)| 135            | 7500 IOPS 250MB/Sec                    |
+| Data egress  | 1.25TB          | 69             | Internet based and routed over internet|
+| **Total**    |                 | **333**        |                                        |
+
+
 ## Ethereum Light node cost comparison.
 
+
+## Other options for hosting node software
+Containerisation
+Kubernetes
+Other cloud providers
 
 
 
