@@ -41,8 +41,11 @@ These should **not** be exposed to the internet. They are used for local communi
 | 5052  | TCP       | Consensus Client  | Beacon Node REST API                 |
 
 
-### What is a validating node?
+## What is a validating node?
 A third component called a validator can be added to the full node. The validator is used as the signing agent for new blocks. If all three components, execution client, consensus client and validator client are installed together, new blocks on the Ethereum chain can be added with that node. A validating node also needs a minimum stake of 32 ETH to allow it to be an active participant in the "Proof of Stake" system.
+
+## What is a light node?
+Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions.
 
 ## What are the minimum Azure components required for a full (non-validating) node on Ethereum mainnet?
 
@@ -56,7 +59,7 @@ For storage and internet egress estimates, see specific cost analysis for each c
 
 ## Basic cost analysis
 
-### Full node (default)
+### Full node on Ethereum mainnet (default)
 Storage - Minimum 2TB - Recommended 4TB - 
 Note the default full node is deployed in pruned mode (not archive mode). The chain size for a Geth client is currently ~1.5TB 
 (A Geth client is a particular deployment of the ETH node written in Go)
