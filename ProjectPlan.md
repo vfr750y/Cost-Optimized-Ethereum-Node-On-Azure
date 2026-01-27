@@ -1,6 +1,5 @@
-# Sepolia-Full-Node-On-Azure
 ## Overview of project
-To set up a Sepolia test net node on Azure is essentially connecting a VM to the internet.
+
 My early thinking is that this project will follow these steps:
 
 ## Project plan
