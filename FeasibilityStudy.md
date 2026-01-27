@@ -42,7 +42,7 @@ A third component called a validator can be added to the full node. The validato
 ## What are the minimum Azure components required for a full (non-validating) node on Ethereum mainnet?
 
 ### Recommended requirements
-Operating system - Linux
+Operating system - Linux - Ubuntu server
 Memory optimized - 8GB RAM per CPU 
 CPU - 8 vCPUs (4 physical cores)
 Memory - 32 GB RAM - Note: More RAM results in less disk IOPS allowing the node to perform fast enough to keep synchronised.
@@ -77,11 +77,51 @@ Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 | **Total**    |                 | **333**        |                                        |
 
 
-## Ethereum Light node cost comparison.
+## Sepolia Light node cost comparison.
+Storage - Minimum 2GB - With a light node, only the headers are synchronised.
+Memory - Max 1GB
+Data egress - <10GB per month
+
+| Item name    | Item value      | Cost (USD p/m) |Description                             |
+|:-------------|:----------------|:---------------|:---------------------------------------|
+| VM           | B2pts v2        | 8              | 2vCPUs 1GB RAM                         |
+| Managed Disk | 4GB SSD(Premium)| 1              | 7500 IOPS 250MB/Sec                    |
+| Data egress  | 10GB            | 0              | First 100GB is free                    |
+| **Total**    |                 | **9**          |                                        |
 
 
 ## Other options for hosting node software
-Containerisation
+### What about Azure Container instances
+
+An Azure container instance is charged by the second
+
+ACI Limit: Azure Container Instances generally provide a maximum of 50 GB of local non-persistent storage. This is barely enough to hold the operating system and the Lodestar binary, let alone a blockchain database.
+
+**Latency**
+The Network Latency Trap: To get more storage in ACI, you must mount an Azure File Share. Because this is network-attached storage (NAS) running over SMB/NFS protocols, it introduces micro-latencies. Ethereum execution clients (like Geth or Reth) require sub-millisecond disk latency to stay synced with the "tip" of the chain. Using Azure Files for a full node results in your node constantly falling behind.
+
+**Storage**
+A full node doesn't just "store" data; it constantly reads and writes to a database to verify transactions.
+
+**IOPS**
+Full Node: Requires 10,000 to 100,000+ IOPS. A standard Azure File Share or even a standard Managed Disk mounted to a container will often throttle these requests, causing the database to become "stuck."
+
+Light Node: Only tracks block headers and sync committee signatures. It requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
+
+So we can't realistically use ACI for a full node, but for out proof of concept it seems a good choice.
+
+Here is the cost breakdown for an Azure container instance:
+
+| Item name    | Item value      | Cost (USD p/m) |Description                                             |
+|:-------------|:----------------|:---------------|:-------------------------------------------------------|
+| CPU          | 1vCPU           | 1              | est 24 hours per month                                 |
+| Memory       | 1GB             | 0.1            | est 24 hours per month                                 |
+| Managed Disk | 50GB Temp disk  | 0              | Sequential read/write ~4000, Randowm Read/Write ~ 750  |
+| Data egress  | 10GB            | 0              | First 100GB is free  per subscription                  |
+| **Total**    |                 | **1.1**        |                                                        |
+
+
+
 Kubernetes
 Other cloud providers
 
