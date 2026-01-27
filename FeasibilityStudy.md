@@ -58,7 +58,7 @@ Using the Azure pricing calculator to give a basic estimate of costs:
 | Data egress  | 2TB             | 114            | Internet based and routed over internet|
 | **Total**    |                 | **502**        |                                        |
 
-
+test
 
 
 
