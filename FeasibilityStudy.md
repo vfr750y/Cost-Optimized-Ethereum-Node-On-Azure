@@ -73,18 +73,7 @@ Data egress - <10GB per month
 
 An Azure container instance is charged by the second
 
-ACI Limit: Azure Container Instances generally provide a maximum of 50 GB of local non-persistent storage. This is barely enough to hold the operating system and the Lodestar binary, let alone a blockchain database.
-
-**Latency**
-The Network Latency Trap: To get more storage in ACI, you must mount an Azure File Share. Because this is network-attached storage (NAS) running over SMB/NFS protocols, it introduces micro-latencies. Ethereum execution clients (like Geth or Reth) require sub-millisecond disk latency to stay synced with the "tip" of the chain. Using Azure Files for a full node results in your node constantly falling behind.
-
-**Storage**
-A full node doesn't just "store" data; it constantly reads and writes to a database to verify transactions.
-
-**IOPS**
-Full Node: Requires 10,000 to 100,000+ IOPS. A standard Azure File Share or even a standard Managed Disk mounted to a container will often throttle these requests, causing the database to become "stuck."
-
-Light Node: Only tracks block headers and sync committee signatures. It requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
+A light node requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
 
 So we can't realistically use ACI for a full node, but for a lightnode it seems a good choice.
 
