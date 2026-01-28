@@ -89,13 +89,12 @@ Here is the cost breakdown for an Azure container instance:
 
 ### Summary of cost analysis
 
-| Node Type | Best Use Case | Monthly Cost (USD) | Key Hardware Driver |
-| :--- | :--- | :--- | :--- |
-| Mainnet Full Node | Production apps & DeFi | $502.00 | 2TB+ SSD & High Egress |
-| Sepolia Testnet | Dev & Proof of Concept | $333.00 | 1TB Storage |
-| Light Node (VM) | Basic header queries | $9.00 | Minimal 4GB Storage |
-| Light Node (ACI) | Low-cost experimentation | $1.10 | Serverless / No persistent disk |
-
+| Node Type | Monthly Cost (USD) | Key Hardware Driver |
+| :--- | :--- | :--- |
+| Mainnet Full Node | $502.00 | 2TB+ SSD & High Egress |
+| Sepolia Testnet | $333.00 | 1TB Storage |
+| Light Node (VM) | $9.00 | Minimal 4GB Storage |
+| Light Node (ACI) | $1.10 | Serverless / No persistent disk |
 Kubernetes
 Other cloud providers
 
