@@ -8,12 +8,10 @@ This project aims to provide benefits by doing the following:
 - Research and minimise costs
 - Providing everyone with a free learning opportunity
 
-## What are the different types of Ethereum Nodes?
-Full node - Archive
-Full node - Default (pruned)
-Light node
+There are several different types of Ethereum node:
 
-## Full node?
+
+## Full node.
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly. There are two versions of the full node, default and archive. The difference between them is the amount of chain data accessible. Archive nodes contain the entire chain from the genesis block (around 15 to 18 TB). The default behaviour for a full node is to prune the data to save space. A default node is around 1.5 to 2 TB.
 
 ### How does a full node communicate?
