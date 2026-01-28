@@ -20,32 +20,13 @@ A full node's core software is in two parts, an execution client and a consensus
 The node discovers other nodes, then it connects with them via a handshake, then gossips with other nodes. A node will typically communicate with between 50 and 100 peers using default settings.
 For normal operations (there are a few edge cases) nodes communicate with other nodes on the peer-to-peer network (P2P).
 
-**Port configuration** 
-
-### Public P2P Ports
-These ports must be open to the internet (TCP/UDP) to allow your node to find peers and stay synchronized.
-
-| Port  | Protocol  | Component         | Description                          |
-|:------|:----------|:------------------|:-------------------------------------|
-| 30303 | TCP & UDP | Execution Client  | Transaction gossip and block syncing |
-| 9000  | TCP & UDP | Consensus Client  | Beacon chain gossip and attestations |
-
-### Local Service Ports (Private)
-These should **not** be exposed to the internet. They are used for local communication between clients or by your own dApps/wallets.
-
-| Port  | Protocol  | Component         | Description                          |
-|:------|:----------|:------------------|:-------------------------------------|
-| 8545  | TCP       | Execution Client  | JSON-RPC API (HTTP)                  |
-| 8546  | TCP       | Execution Client  | WebSockets API                       |
-| 8551  | TCP       | Engine API        | Authenticated EL-CL link (JWT)       |
-| 5052  | TCP       | Consensus Client  | Beacon Node REST API                 |
 
 
 ## What is a validating node?
-A third component called a validator can be added to the full node. The validator is used as the signing agent for new blocks. If all three components, execution client, consensus client and validator client are installed together, new blocks on the Ethereum chain can be added with that node. A validating node also needs a minimum stake of 32 ETH to allow it to be an active participant in the "Proof of Stake" system.
+A third component called a validator can be added to the full node. The validator is used as the signing agent for new blocks. If all three components, execution client, consensus client and validator client are installed together, new blocks on the Ethereum chain can be added with that node. A validating node also needs a minimum stake of 32 ETH to allow it to be an active participant in the "Proof of Stake" system. For the purposes of this proof of concept, due to the staking cost, a validator is out of scope.
 
 ## What is a light node?
-Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions.
+Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions. A light node allows users to verify state directly without having to use a third party like Infura.
 
 ## What are the minimum Azure components required for a full (non-validating) node on Ethereum mainnet?
 
@@ -74,6 +55,8 @@ Using the Azure pricing calculator to give a basic estimate of costs for a full 
 | **Total**    |                 | **502**        |                                        |
 
 ## Sepolia testnet full node (default)?
+As the Sepolia test net is not used for production scale transactions and only contains a chain created in October 2021 the storage required is significantly reduced. As storage is the main cost for an Azure node, reducing the disk size required should make a node cheaper to run. In this case, we won't be able to interact with the Ethereum mainnet but it will still provide a proof of concept.
+
 Storage - Minimum 1TB - Recommended 2TB (The current chain size for Sepolia is around 650GB depending on the client version).
 Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 
@@ -86,6 +69,8 @@ Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 
 
 ## Sepolia Light (e.g. Lodestar) node cost comparison.
+
+
 Storage - Minimum 2GB - With a light node, only the headers are synchronised.
 Memory - Max 1GB
 Data egress - <10GB per month
@@ -140,6 +125,26 @@ GitHub account
 GitHub to Terraform integration
 Terraform account
 Terraform to Azure integration
+
+**Port configuration** 
+
+### Public P2P Ports
+These ports must be open to the internet (TCP/UDP) to allow your node to find peers and stay synchronized.
+
+| Port  | Protocol  | Component         | Description                          |
+|:------|:----------|:------------------|:-------------------------------------|
+| 30303 | TCP & UDP | Execution Client  | Transaction gossip and block syncing |
+| 9000  | TCP & UDP | Consensus Client  | Beacon chain gossip and attestations |
+
+### Local Service Ports (Private)
+These should **not** be exposed to the internet. They are used for local communication between clients or by your own dApps/wallets.
+
+| Port  | Protocol  | Component         | Description                          |
+|:------|:----------|:------------------|:-------------------------------------|
+| 8545  | TCP       | Execution Client  | JSON-RPC API (HTTP)                  |
+| 8546  | TCP       | Execution Client  | WebSockets API                       |
+| 8551  | TCP       | Engine API        | Authenticated EL-CL link (JWT)       |
+| 5052  | TCP       | Consensus Client  | Beacon Node REST API                 |
 
 
 
