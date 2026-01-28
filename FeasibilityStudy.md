@@ -24,7 +24,7 @@ A third component called a validator can be added to the full node. The validato
 ## Light node
 Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions. A light node allows users to verify state directly without having to use a third party like Infura.
 
-## Basic cost analysis
+## Basic cost analysis as of 29-Jan-2026
 
 ### Full node on Ethereum mainnet (default)
 Storage - Minimum 2TB - Recommended 4TB - 
