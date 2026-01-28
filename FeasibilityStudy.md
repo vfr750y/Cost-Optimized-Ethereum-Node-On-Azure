@@ -10,6 +10,13 @@ This project aims to provide benefits by doing the following:
 
 There are several different types of Ethereum node:
 
+## Assumptions and project constraints
+
+Minimising costs is highest priority.
+We are not concerned with the capability of the deployed node, only that it is able to communicate with Ethereum blockchain (testnet or mainnet).
+Azure will be used as the platform for deployment.
+A deployment method using Infrastructure as Code is preferred.
+
 
 ## Full node.
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly. There are two versions of the full node, default and archive. The difference between them is the amount of chain data accessible. Archive nodes contain the entire chain from the genesis block (around 15 to 18 TB). The default behaviour for a full node is to prune the data to save space. A default node is around 1.5 to 2 TB.
@@ -95,38 +102,34 @@ Here is the cost breakdown for an Azure container instance:
 | Sepolia Testnet | $333.00 | 1TB Storage |
 | Light Node (VM) | $9.00 | Minimal 4GB Storage |
 | Light Node (ACI) | $1.10 | Serverless / No persistent disk |
-Kubernetes
-Other cloud providers
-
 
 
 ## What other components are required for the deployment and configuration of the node?
 GitHub account
-GitHub to Terraform integration
 Terraform account
+GitHub to Terraform integration
 Terraform to Azure integration
 
-**Port configuration** 
+## Risks
+### State Access
+Every time you want to interact with a contract (e.g., checking a Uniswap price or your wallet balance), the light node must perform a Merkle Proof request to a peer. Instead of a local disk read (micro-seconds), you’re doing a network round-trip (milliseconds).
 
-### Public P2P Ports
-These ports must be open to the internet (TCP/UDP) to allow your node to find peers and stay synchronized.
+Full nodes treat light client support as a luxury service. When a node's hardware is under pressure, it will "shed" light clients first to prioritize its own survival. The three main triggers for this are:
 
-| Port  | Protocol  | Component         | Description                          |
-|:------|:----------|:------------------|:-------------------------------------|
-| 30303 | TCP & UDP | Execution Client  | Transaction gossip and block syncing |
-| 9000  | TCP & UDP | Consensus Client  | Beacon chain gossip and attestations |
+- State Spikes: High market activity (like NFT mints) forces the node to prioritize local Disk/CPU tasks over answering external queries.
 
-### Local Service Ports (Private)
-These should **not** be exposed to the internet. They are used for local communication between clients or by your own dApps/wallets.
+- Bandwidth Limits: Providing "proofs" to light clients consumes significant data; operators often kill these connections to stay under bandwidth caps.
 
-| Port  | Protocol  | Component         | Description                          |
-|:------|:----------|:------------------|:-------------------------------------|
-| 8545  | TCP       | Execution Client  | JSON-RPC API (HTTP)                  |
-| 8546  | TCP       | Execution Client  | WebSockets API                       |
-| 8551  | TCP       | Engine API        | Authenticated EL-CL link (JWT)       |
-| 5052  | TCP       | Consensus Client  | Beacon Node REST API                 |
+- Upgrade Stress: As the network grows (e.g., the 2026 "Glamsterdam" upgrade), the increased data per block forces nodes to drop "extra" tasks like serving light clients just to stay synced.
 
+We might be able to mitigate the latency issue by deploying the node to a more central location such as east US or somewhere in Europe.
 
+### Uptime vs node reputation
+Keeping a node running creates "Peer Stickiness." If you keep turning it off and only use it when needed, it may result in poor response times from full node peers. 
 
+**Peer Discovery Lag**: If you only turn your node on when you need it, it must spend the first 30–60 seconds "finding its friends." It has to query bootnodes, find peers that support light client requests, and perform handshakes. 
+
+**sampling activity**
+A light node gossips with its peers every 12 seconds, sampling parts of the blockchain as they appear. If they can successfully pull 32 random pieces of a block's data, there is a 99.999% mathematical certainty that the entire block is available. Ethereum nodes keep a "scoring" system for their peers. If your light node is constantly disappearing (going offline), full nodes will rank you as a "low-quality peer" and may deprioritize your requests during busy periods. High uptime helps you maintain connections to high-quality, high-speed full nodes.
 
 

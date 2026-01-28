@@ -5,6 +5,7 @@ My early thinking is that this project will follow these steps:
 ## Project plan
 ### Step 1) Feasibility study
     - Why am I doing this?
+    - Assumptions
     - What is a full node? 
     - How does it communicate? 
     - What are the minimum Azure components required to get a node?
