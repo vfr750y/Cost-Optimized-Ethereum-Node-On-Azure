@@ -111,10 +111,14 @@ Here is the cost breakdown for an Azure container instance:
 To meet the requirements of this project we only need to be running simple node such as a light node or stateless node. In this case, a standard light node on an Azure Container Instance seems to be the best fit. Stateless clients rely on proofs being provided and don't have a heartbeat interaction with other nodes. Whilst this means they can run with virtually no resources, they don't provide the best use case for a proof of concept. It is more likely that at this time, light nodes will be widely used and supported. The technical aspects of running a light node provide ample opportunity for showcasing a whole solution including version control and infrastructure as code, Azure container instance, virtual network configuration, security and monitoring. 
 
 ## What other components are required for the deployment and configuration of the node?
-GitHub account
-Terraform account
-GitHub to Terraform integration
-Terraform to Azure integration
+- GitHub : This is the repository for the .tf files. 
+- GitHub Actions workflow file (.yml) : defines the actions that perform the Terraform workflow.
+- Terraform : Terraform will check the code against the state file, prepare the deployment and push the changes to Azure.
+- Azure storage account : Keeps the Terraform state file.
+- Azure file share : Persistent storage for the Azure container.
+- Azure Entra ID service principle : to allow GitHub to run the Terraform code.
+- GitHub secrets : Storing the Azure Service Principle details.
+
 
 ## Risks
 ### State Access
