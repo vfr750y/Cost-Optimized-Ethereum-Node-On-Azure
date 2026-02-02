@@ -82,10 +82,8 @@ Data egress - <10GB per month
 
 ### Light node and Stateless light node on Azure Container instance
 
-An Azure container instance is charged by the second
-
+An Azure container instance is charged by the second.
 A light node requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
-
 So we can't realistically use ACI for a full node, but for a lightnode it seems a good choice.
 
 Here is the cost breakdown for an Azure container instance:
