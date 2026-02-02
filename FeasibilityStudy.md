@@ -140,4 +140,5 @@ Keeping a node running creates "Peer Stickiness." If you keep turning it off and
 **sampling activity**
 A light node gossips with its peers every 12 seconds, sampling parts of the blockchain as they appear. If they can successfully pull 32 random pieces of a block's data, there is a 99.999% mathematical certainty that the entire block is available. Ethereum nodes keep a "scoring" system for their peers. If your light node is constantly disappearing (going offline), full nodes will rank you as a "low-quality peer" and may deprioritize your requests during busy periods. High uptime helps you maintain connections to high-quality, high-speed full nodes.
 
-
+### Azure File Share
+At this point I haven't yet considered the cost of an Azure file share for persistent storage. If it turns out that this is essential, the cost will need to be included and may affect the scope of the project.
