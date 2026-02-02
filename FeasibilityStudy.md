@@ -17,21 +17,22 @@ There are several different types of Ethereum node:
 - Azure will be used as the platform for deployment.
 - A deployment method using Infrastructure as Code is preferred.
 
+## Types of Node
 
-## Full node.
+### Full node.
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly. There are two versions of the full node, default and archive. The difference between them is the amount of chain data accessible. Archive nodes contain the entire chain from the genesis block (around 15 to 18 TB). The default behaviour for a full node is to prune the data to save space. A default node is around 1.5 to 2 TB.
 
-### How does a full node communicate?
+#### How does a full node communicate?
 The node discovers other nodes, then it connects with them via a handshake, then gossips with other nodes. A node will typically communicate with between 50 and 100 peers using default settings.
 For normal operations (there are a few edge cases) nodes communicate with other nodes on the peer-to-peer network (P2P).
 
-## Validator node
+### Validator node
 A third component called a validator can be added to the full node. The validator is used as the signing agent for new blocks. If all three components, execution client, consensus client and validator client are installed together, new blocks on the Ethereum chain can be added with that node. A validating node also needs a minimum stake of 32 ETH to allow it to be an active participant in the "Proof of Stake" system. For the purposes of this proof of concept, due to the staking cost, a validator is out of scope.
 
-## Light node
+### Light node
 Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions. A light node allows users to verify state directly without having to use a third party like Infura.
 
-## Stateless light node
+### Stateless light node
 Stateless clients verify blockchain data without storing local state or synchronizing with the network. Stateless clients operate entirely on demand using compact cryptographic proofs: Merkle proofs for execution-layer data inclusion, and consensus proofs — such as sync committee attestations or aggregated zk-proofs — to validate that the block originates from the correct validator set and belongs to the canonical chain.
 
 ## Basic cost analysis as of 29-Jan-2026
