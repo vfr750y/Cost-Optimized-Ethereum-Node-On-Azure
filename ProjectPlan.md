@@ -3,19 +3,15 @@
 My early thinking is that this project will follow these steps:
 
 ## Project plan
-### Step 1) Feasibility study
-    - Why am I doing this?
+### Step 1) Feasibility study and scoping exercise
+    - Requirements analysis why am I doing this?
     - Assumptions
-    - What is a full node? 
-    - How does it communicate? 
+    - What are the different types of node? 
     - What are the minimum Azure components required to get a node?
-    - How much do these cost?
-    - Have we looked at all angles are there any other alternative architectures? - 
-           
-            I.e. state healing / up-time / limit your peer count and save on these egress fees
-            Switch your Public IP's routing preference from "Microsoft Premium Global Network" to "Routing Preference: Internet (ISP).
-            You can disable certain types of discovery if you aren't a validator.
-            Are there Azure Alternatives to a VM - Kubernetes or Azure containers?
+    - Cost analysis.
+    - Definition of scope.
+    - Risks
+    - Have we looked at all angles are there any other alternative architectures?
 
 ### Step 2) High level design
     - High level description of proposed solution
