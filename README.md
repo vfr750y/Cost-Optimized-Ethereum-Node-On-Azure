@@ -1,18 +1,18 @@
 # Ethereum Node on Azure
 ## Overview of project
 
-This project is going to be a proof of concept. The aim is to deploy an Ethererum node on Azure using Github actions with Terraform cloud to deploy and configure the relevant Azure resources. My early thinking is that building an Ethereum node on Azure is essentially a matter of connecting a VM with the node software to the internet.
+This project is going to be a proof of concept. The aim is to deploy an Ethererum node on Azure using version control to manage the development of the solution and Infrastructure as Code to deploy and configure the relevant Azure resources. My early thinking is that building an Ethereum node on Azure is essentially a matter of connecting a VM with the node software to the internet.
 
 I'm expecting this project to happen in these stages:
 
 ## Project stages
 
-### [Stage 1) Project plan](ProjectPlan.md)
-### [Stage 2) Feasibility study](FeasibilityStudy.md)
-### [Stage 3) High level design]()
-### [Stage 4) Low level design]()
-### [Stage 5) Implementation]()
-### [Stage 6) Project de-brief ]()
+### [1) Project plan](ProjectPlan.md)
+### [2) Feasibility study and scope](FeasibilityStudy.md)
+### [3) High level design]()
+### [4) Low level design]()
+### [5) Implementation]()
+### [6) Project de-brief ]()
 
 ### Early project considerations. 
 The budget for this project is restricted, so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them. If it's not feasible to do a full node then there are a couple of other node types to consider that might be more feasible. A Sepolia test node is also going to be cheaper than a full node.

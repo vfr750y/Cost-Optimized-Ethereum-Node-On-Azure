@@ -12,10 +12,10 @@ There are several different types of Ethereum node:
 
 ## Assumptions and project constraints
 
-Minimising costs is highest priority.
-We are not concerned with the capability of the deployed node, only that it is able to communicate with Ethereum blockchain (testnet or mainnet).
-Azure will be used as the platform for deployment.
-A deployment method using Infrastructure as Code is preferred.
+- Minimising costs is highest priority.
+- We are not concerned with the capability of the deployed node, only that it is able to communicate with Ethereum blockchain (testnet or mainnet).
+- Azure will be used as the platform for deployment.
+- A deployment method using Infrastructure as Code is preferred.
 
 
 ## Full node.
@@ -30,6 +30,9 @@ A third component called a validator can be added to the full node. The validato
 
 ## Light node
 Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions. A light node allows users to verify state directly without having to use a third party like Infura.
+
+## Stateless light node
+Stateless clients verify blockchain data without storing local state or synchronizing with the network. Stateless clients operate entirely on demand using compact cryptographic proofs: Merkle proofs for execution-layer data inclusion, and consensus proofs — such as sync committee attestations or aggregated zk-proofs — to validate that the block originates from the correct validator set and belongs to the canonical chain.
 
 ## Basic cost analysis as of 29-Jan-2026
 
@@ -76,7 +79,7 @@ Data egress - <10GB per month
 | **Total**    |                 | **9**          |                                        |
 
 
-### Light node on Azure Container instance
+### Light node and Stateless light node on Azure Container instance
 
 An Azure container instance is charged by the second
 
@@ -101,7 +104,9 @@ Here is the cost breakdown for an Azure container instance:
 | Mainnet Full Node | $502.00 | 2TB+ SSD & High Egress |
 | Sepolia Testnet | $333.00 | 1TB Storage |
 | Light Node (VM) | $9.00 | Minimal 4GB Storage |
-| Light Node (ACI) | $1.10 | Serverless / No persistent disk |
+| Light Node (ACI) / Stateless light node | $1.10 | Serverless / No persistent disk |
+
+
 
 
 ## What other components are required for the deployment and configuration of the node?
