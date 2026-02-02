@@ -137,7 +137,7 @@ Keeping a node running creates "Peer Stickiness." If you keep turning it off and
 
 **Peer Discovery Lag**: If you only turn your node on when you need it, it must spend the first 30–60 seconds "finding its friends." It has to query bootnodes, find peers that support light client requests, and perform handshakes. 
 
-**sampling activity**
+**Sampling activity**
 A light node gossips with its peers every 12 seconds, sampling parts of the blockchain as they appear. If they can successfully pull 32 random pieces of a block's data, there is a 99.999% mathematical certainty that the entire block is available. Ethereum nodes keep a "scoring" system for their peers. If your light node is constantly disappearing (going offline), full nodes will rank you as a "low-quality peer" and may deprioritize your requests during busy periods. High uptime helps you maintain connections to high-quality, high-speed full nodes.
 
 ### Azure File Share
