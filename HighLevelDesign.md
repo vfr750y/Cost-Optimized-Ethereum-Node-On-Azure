@@ -74,52 +74,39 @@ graph TD
 ## System Architecture Diagram (Physical/Cloud)
 
 ```mermaid
-graph TD
-    subgraph User Interaction
-        A[MetaMask Wallet]
+graph TB
+    subgraph GitHub_Automation [CI/CD Pipeline]
+        repo[GitHub Repository<br/>.tf files]
+        actions["GitHub Actions Workflow (.yml)"]
+        secrets[GitHub Secrets<br/>Azure SPN Details]
     end
 
-    subgraph GitHub
-        B[GitHub Repository]
-        C[GitHub Actions Workflow (.yml)]
-        D[GitHub Secrets]
+    subgraph Terraform_Cloud [Orchestration]
+        TF[Terraform Account]
+        State[(Azure Storage Account<br/>State File)]
     end
 
-    subgraph Terraform Cloud
-        E[Terraform Account]
+    subgraph Azure_Cloud [Production Environment]
+        SPN[Azure Entra ID<br/>Service Principal]
+        subgraph Container_Group [Compute]
+            ACI[Azure Container Instance<br/>Linux]
+            Helios[Helios Light Client]
+        end
+        Fileshare[(Azure File Share<br/>Persistent Storage)]
     end
 
-    subgraph Azure Cloud
-        F[Azure Subscription]
-        G[Azure Entra ID Service Principal]
-        H[Azure Storage Account]
-        I[Azure Container Instance (Linux)]
-        J[Azure File Share]
-        K[Helios Light Client]
-    end
+    User((User / MetaMask))
 
-    A -- "Interacts with" --> K
-    B -- "Contains .tf files" --> C
-    C -- "Uses" --> D
-    C -- "Triggers" --> E
-    E -- "Manages Infrastructure in" --> F
-    F -- "Authenticates via" --> G
-    E -- "Stores State in" --> H
-    F -- "Deploys" --> I
-    I -- "Mounts" --> J
-    I -- "Runs" --> K
-
-    style A fill:#e0f2f7,stroke:#333,stroke-width:2px
-    style B fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style C fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style D fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style E fill:#e6e6fa,stroke:#333,stroke-width:2px
-    style F fill:#add8e6,stroke:#333,stroke-width:2px
-    style G fill:#add8e6,stroke:#333,stroke-width:2px
-    style H fill:#add8e6,stroke:#333,stroke-width:2px
-    style I fill:#add8e6,stroke:#333,stroke-width:2px
-    style J fill:#add8e6,stroke:#333,stroke-width:2px
-    style K fill:#add8e6,stroke:#333,stroke-width:2px
+    %% Relationships
+    repo --> actions
+    secrets --> actions
+    actions --> TF
+    TF --> SPN
+    SPN --> ACI
+    TF -.-> State
+    ACI --> Helios
+    Helios --- Fileshare
+    User ==> Helios
 ```
 
 
