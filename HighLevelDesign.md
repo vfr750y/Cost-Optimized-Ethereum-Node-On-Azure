@@ -76,17 +76,17 @@ graph TD
 
 ```mermaid
 graph TB
-    subgraph GitHub ["GitHub (Source & CI/CD)"]
+    subgraph GitHub ["GitHub (Version control & CI/CD)"]
         repo["GitHub Repository (.tf files)"]
         actions["GitHub Actions (.yml)"]
         secrets["GitHub Secrets (Azure SPN Details)"]
     end
 
-    subgraph TF_Cloud ["Terraform (Logic & State)"]
+    subgraph TF_Cloud ["Terraform orchestrator (Logic & State)"]
         TF["Terraform Account"]
     end
 
-    subgraph Azure ["Azure Subscription (Production)"]
+    subgraph Azure ["Azure Subscription"]
         direction TB
         SPN["Entra ID Service Principal"]
         
