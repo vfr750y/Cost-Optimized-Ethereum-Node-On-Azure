@@ -120,6 +120,63 @@ graph TB
 
 
 ## Sequence diagram
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as Developer
+    participant GH as GitHub Actions
+    participant TF as Terraform Cloud
+    participant Azure as Azure (SPN/ACI)
+    participant FS as Azure File Share
+    participant BC as Ethereum P2P
+
+    Note over Dev, GH: Phase 1: Deployment
+    Dev->>GH: Push .tf changes to main
+    GH->>GH: Authenticate via GitHub Secrets
+    GH->>TF: Trigger 'terraform apply'
+    TF->>Azure: Auth via Entra ID (Service Principal)
+    Azure->>Azure: Update ACI with Helios Image
+    Azure->>FS: Mount Persistent Storage
+
+    Note over Azure, BC: Phase 2: Runtime
+    Azure->>FS: Load existing Chain Data/Keys
+    Azure->>BC: Sync Block Headers (P2P)
+    
+    Note over Dev, BC: Phase 3: User Interaction
+    actor User as MetaMask User
+    User->>Azure: Send RPC Request
+    Azure-->>User: Return Verified Data/Proof
+```
+
+### Explanation of sequence diagram
+Operational Process Flow
+The lifecycle of the Helios Light Client system is categorized into three distinct phases: Infrastructure Orchestration, Runtime Initialization, and Client Interaction.
+
+1. Infrastructure Orchestration (CI/CD)
+The process begins when a developer pushes updated Terraform configurations to the GitHub repository.
+
+Authentication: GitHub Actions retrieves the Azure Service Principal credentials from GitHub Secrets to establish a secure session with the cloud environment.
+
+State Management: Terraform Cloud calculates the "diff" between the current infrastructure and the desired state. It communicates with the Azure Storage Account to update the state file, ensuring a "single source of truth."
+
+Provisioning: Upon approval, Terraform issues commands to the Azure Resource Manager to deploy or update the Azure Container Instance (ACI).
+
+2. Runtime Initialization & Persistence
+Once the container is provisioned, the Helios binary starts within the Linux environment.
+
+Volume Mounting: The ACI mounts the Azure File Share using the SMB protocol. This allows the Helios client to access persistent data (such as synced headers and local database files) that survives container restarts.
+
+Network Synchronization: Helios initiates a P2P handshake with the Ethereum network. It begins tracking the Sync Committee and downloading the latest block headers to ensure it is at the "head" of the chain.
+
+3. User Interaction (The RPC Loop)
+The final phase represents the steady-state operation where the system provides value to the end-user.
+
+Request Handling: A user (via MetaMask) sends a JSON-RPC request to the ACI's public IP/FQDN.
+
+Verification: Helios does not blindly trust the data. It retrieves the necessary Merkle proofs from the P2P network, verifies them against its locally stored trusted headers, and returns a cryptographically secured response to the user.
+
+Security Note
+Note: All communication between GitHub, Terraform, and Azure is encrypted in transit via TLS 1.2+. The Service Principal follows the Principle of Least Privilege, granted only the specific permissions required to manage the ACI and Storage Account resources.
 
 ## Assumptions
 
