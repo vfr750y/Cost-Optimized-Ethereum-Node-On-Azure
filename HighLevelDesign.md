@@ -70,3 +70,4 @@ Relationship: LIGHT_CLIENT ||--o{ P2P_NETWORK (Exactly One to Zero or Many)
 Description: The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions.
 
 Logic: To function, a Light Client must be part of exactly one specific network (e.g., Mainnet or Sepolia). It maintains connections to many peers (Full Nodes) simultaneously to verify data via Merkle proofs without needing to store the entire blockchain history.
+
