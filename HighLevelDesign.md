@@ -3,19 +3,42 @@
 ## High level solution
 ### Entity relationship diagram
 ```mermaid
-graph TD
-    subgraph Azure_Cloud_Environment [Azure Cloud Environment]
-        User[User] -- "Manages" --> Wallet[Wallet]
-        Wallet -- "Sends RPC Calls" --> LightNode[Light Node: Lodestar/Helios]
-    end
+erDiagram
+    USER ||--o{ WALLET : "owns"
+    WALLET ||--o{ TRANSACTION : "signs"
+    WALLET ||--|| LIGHT_CLIENT : "interfaces with"
+    LIGHT_CLIENT ||--o{ P2P_NETWORK : "gossips with"
+    P2P_NETWORK ||--|{ BLOCK : "contains"
+    
+    USER {
+        string user_id
+        string username
+    }
+    
+    WALLET {
+        string public_address
+        string derivation_path
+        float balance_eth
+    }
 
-    subgraph Blockchain_P2P_Layer [Blockchain P2P Layer]
-        LightNode -- "Gossips / Syncs" --> EthNetwork[Ethereum Node Network]
-    end
+    LIGHT_CLIENT {
+        string client_type "Lodestar/Helios"
+        string sync_status
+        string head_block_hash
+    }
 
-    %% Defining Styles
-    style Azure_Cloud_Environment fill:#f0f7ff,stroke:#0078d4,stroke-width:2px
-    style Blockchain_P2P_Layer fill:#f5f5f5,stroke:#3c3c3d,stroke-width:2px
+    P2P_NETWORK {
+        string chain_id
+        int peer_count
+        string protocol_version
+    }
+
+    TRANSACTION {
+        string tx_hash
+        int nonce
+        uint256 value
+        uint256 gas_price
+    }
 
 ```
 
