@@ -31,7 +31,7 @@ Logic: To function, a Light Client must be part of exactly one specific network 
 ## Data flow diagram
 ```mermaid
 graph TD
-    User((User / Managed Identity))
+    User((User))
     Vault[(Wallet Key Vault)]
     
     subgraph LC [Light Client]
