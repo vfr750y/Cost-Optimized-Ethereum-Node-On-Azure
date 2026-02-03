@@ -1,7 +1,7 @@
 # High Level Design
 
-## High level solution
-### Entity relationship diagram
+
+## Entity relationship diagram
 
 ```mermaid
 erDiagram
@@ -11,7 +11,7 @@ erDiagram
     LIGHT_CLIENT ||--o{ P2P_NETWORK : "broadcasts to / syncs with"
 ```
 
-#### Diagram explanation
+### Diagram explanation
 1. User to Wallet
 An individual user or an Azure Managed Identity acts as the owner of the cryptographic keys.
 Logic: A User must exist for a Wallet to be managed, but a new User might not have created a Wallet yet (hence "Zero or Many"). However, a Wallet is logically tied to exactly one owner for accountability and access control.
@@ -28,3 +28,25 @@ Logic: A Light Client acts as a gateway; it can receive many different transacti
 The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions.
 Logic: To function, a Light Client must be part of exactly one specific network (e.g., Mainnet or Sepolia). It maintains connections to many peers (Full Nodes) simultaneously.
 
+## Data flow diagram
+
+```mermaid
+graph LR
+    User((User / Managed Identity))
+    
+    subgraph System_Boundary [Transaction Lifecycle]
+        P1[1.0 Sign Transaction]
+        P2[2.0 Validate & Submit]
+        P3[3.0 Broadcast & Sync]
+    end
+
+    DataStore[(Wallet Key Vault)]
+    External((Ethereum P2P Network))
+
+    %% Data Flows
+    User -->|Initiates Action| P1
+    DataStore -->|Private Key / Secret| P1
+    P1 -->|Signed Data Payload| P2
+    P2 -->|Raw Transaction| P3
+    P3 <-->|Gossip Protocol / Block Headers| External
+```
