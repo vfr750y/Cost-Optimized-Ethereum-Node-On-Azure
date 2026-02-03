@@ -77,27 +77,27 @@ graph TD
 ```mermaid
 graph TB
     subgraph GitHub ["GitHub (Source & CI/CD)"]
-        repo[GitHub Repository<br/>(.tf files)]
+        repo["GitHub Repository (.tf files)"]
         actions["GitHub Actions (.yml)"]
-        secrets[GitHub Secrets<br/>(Azure SPN Details)]
+        secrets["GitHub Secrets (Azure SPN Details)"]
     end
 
     subgraph TF_Cloud ["Terraform (Logic & State)"]
-        TF[Terraform Account]
+        TF["Terraform Account"]
     end
 
     subgraph Azure ["Azure Subscription (Production)"]
         direction TB
-        SPN[Entra ID Service Principal]
+        SPN["Entra ID Service Principal"]
         
         subgraph Data_Storage ["Storage Layer"]
-            State[(Storage Account: tfstate)]
-            FS[(Azure File Share: Persistent Storage)]
+            State[("Storage Account: tfstate")]
+            FS[("Azure File Share: Persistent Storage")]
         end
 
         subgraph Runtime ["Compute Group"]
             subgraph ACI_Instance ["Azure Container Instance (Linux)"]
-                Helios[Helios Light Client]
+                Helios["Helios Light Client"]
             end
         end
     end
@@ -114,8 +114,7 @@ graph TB
     TF -.-> State
 
     %% Execution & Persistence
-    Helios -- "Uses" --> FS
-    ACI_Instance -- "Hosts" --> Helios
+    Helios -- "Mounts" --> FS
     User ==> Helios
 ```
 
