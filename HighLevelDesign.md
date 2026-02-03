@@ -109,6 +109,50 @@ graph TB
     User ==> Helios
 ```
 
+```mermaid
+graph TB
+    subgraph GitHub ["GitHub (Source & CI/CD)"]
+        repo[GitHub Repository]
+        actions["GitHub Actions (.yml)"]
+        secrets[GitHub Secrets]
+    end
+
+    subgraph TF_Cloud ["Terraform (Logic)"]
+        TF[Terraform Account]
+    end
+
+    subgraph Azure ["Azure Subscription (Production)"]
+        direction TB
+        SPN[Entra ID Service Principal]
+        
+        subgraph Data_Storage ["Storage Layer"]
+            State[(Storage Account: tfstate)]
+            FS[(Azure File Share: Persistent)]
+        end
+
+        subgraph Runtime ["Compute Group"]
+            ACI[Azure Container Instance]
+            Helios[Helios Light Client]
+        end
+    end
+
+    User((MetaMask Wallet))
+
+    %% CI/CD Flow
+    repo & secrets --> actions
+    actions --> TF
+
+    %% Infrastructure Flow
+    TF --> SPN
+    SPN --> Runtime
+    TF -.-> State
+
+    %% Execution & Persistence
+    Helios --- FS
+    ACI --- Helios
+    User ==> Helios
+```
+
 
 ## Sequence diagram
 
