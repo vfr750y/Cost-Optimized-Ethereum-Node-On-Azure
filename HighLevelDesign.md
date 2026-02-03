@@ -50,3 +50,10 @@ graph LR
     P2 -->|Raw Transaction| P3
     P3 <-->|Gossip Protocol / Block Headers| External
 ```
+
+### Explanation of data flow diagram
+| Process | Input | Output | Logic / Transformation |
+| :--- | :--- | :--- | :--- |
+| **1.0 Sign Transaction** | Intent & Private Key | Signed Tx Payload | The Wallet retrieves the secret (from Azure Key Vault or local storage) to apply a cryptographic signature to the transaction parameters (nonce, gas, data). |
+| **2.0 Validate & Submit** | Signed Tx Payload | Validated Raw Tx | The Light Client verifies the signature and ensures the transaction format adheres to network standards (e.g., EIP-1559) before submission. |
+| **3.0 Broadcast & Sync** | Validated Raw Tx | Network Propagation | The Light Client pushes the transaction to connected peers via Gossip protocol and receives Block Headers to update the local state. |
