@@ -51,6 +51,27 @@ graph LR
     P3 <-->|Gossip Protocol / Block Headers| External
 ```
 
+```mermaid
+graph TD
+    User((User / Managed Identity))
+    Vault[(Wallet Key Vault)]
+    
+    subgraph LC [Light Client]
+        P1[1.0 Sign Transaction]
+        P2[2.0 Validate Transaction]
+        P3[3.0 Broadcast to Network]
+    end
+
+    Network((Ethereum P2P Network))
+
+    %% Data Flows
+    User -->|Transaction Request| P1
+    Vault -->|Private Key Access| P1
+    P1 -->|Signed Payload| P2
+    P2 -->|Validated Raw Tx| P3
+    P3 <-->|Gossip Protocol / Block Headers| Network
+```
+
 ### Explanation of data flow diagram
 | Process | Input | Output | Logic / Transformation |
 | :--- | :--- | :--- | :--- |
