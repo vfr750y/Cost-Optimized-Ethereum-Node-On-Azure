@@ -73,51 +73,16 @@ graph TD
 
 ## System Architecture Diagram (Physical/Cloud)
 
-```mermaid
-graph TB
-    subgraph GitHub_Automation [CI/CD Pipeline]
-        repo[GitHub Repository<br/>.tf files]
-        actions["GitHub Actions Workflow (.yml)"]
-        secrets[GitHub Secrets<br/>Azure SPN Details]
-    end
-
-    subgraph Terraform_Cloud [Orchestration]
-        TF[Terraform Account]
-        State[(Azure Storage Account<br/>State File)]
-    end
-
-    subgraph Azure_Cloud [Production Environment]
-        SPN[Azure Entra ID<br/>Service Principal]
-        subgraph Container_Group [Compute]
-            ACI[Azure Container Instance<br/>Linux]
-            Helios[Helios Light Client]
-        end
-        Fileshare[(Azure File Share<br/>Persistent Storage)]
-    end
-
-    User((User / MetaMask))
-
-    %% Relationships
-    repo --> actions
-    secrets --> actions
-    actions --> TF
-    TF --> SPN
-    SPN --> ACI
-    TF -.-> State
-    ACI --> Helios
-    Helios --- Fileshare
-    User ==> Helios
-```
 
 ```mermaid
 graph TB
     subgraph GitHub ["GitHub (Source & CI/CD)"]
-        repo[GitHub Repository]
+        repo[GitHub Repository<br/>(.tf files)]
         actions["GitHub Actions (.yml)"]
-        secrets[GitHub Secrets]
+        secrets[GitHub Secrets<br/>(Azure SPN Details)]
     end
 
-    subgraph TF_Cloud ["Terraform (Logic)"]
+    subgraph TF_Cloud ["Terraform (Logic & State)"]
         TF[Terraform Account]
     end
 
@@ -127,12 +92,13 @@ graph TB
         
         subgraph Data_Storage ["Storage Layer"]
             State[(Storage Account: tfstate)]
-            FS[(Azure File Share: Persistent)]
+            FS[(Azure File Share: Persistent Storage)]
         end
 
         subgraph Runtime ["Compute Group"]
-            ACI[Azure Container Instance]
-            Helios[Helios Light Client]
+            subgraph ACI_Instance ["Azure Container Instance (Linux)"]
+                Helios[Helios Light Client]
+            end
         end
     end
 
@@ -148,8 +114,8 @@ graph TB
     TF -.-> State
 
     %% Execution & Persistence
-    Helios --- FS
-    ACI --- Helios
+    Helios -- "Uses" --> FS
+    ACI_Instance -- "Hosts" --> Helios
     User ==> Helios
 ```
 
