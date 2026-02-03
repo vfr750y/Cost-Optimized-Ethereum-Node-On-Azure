@@ -42,6 +42,15 @@ erDiagram
     }
 
 ```
+
+```mermaid
+erDiagram
+    USER ||--o{ WALLET : "manages"
+    WALLET ||--o{ TRANSACTION : "signs"
+    TRANSACTION }o--|| LIGHT_CLIENT : "submitted to"
+    LIGHT_CLIENT ||--o{ P2P_NETWORK : "broadcasts to / syncs with"
+```
+
 #### Diagram explanation
 1. User to Wallet
 Relationship: USER ||--o{ WALLET (Exactly One to Zero or Many)
