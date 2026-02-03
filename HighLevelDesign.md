@@ -21,10 +21,10 @@ The Wallet uses its private key to digitally sign data payloads, transforming th
 Logic: A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature.
 
 3. Transaction to Light Client
-The signed Transaction is sent to the Light Client (Lodestar/Helios) via a JSON-RPC request (e.g., eth_sendRawTransaction).
+The signed Transaction is sent to the Light Client.
 Logic: A Light Client acts as a gateway; it can receive many different transactions from various sources. From the perspective of the Transaction, it is submitted to one specific node to enter the network, though it may eventually exist on all nodes.
 
 4. Light Client to Ethereum Node Network
 The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions.
-Logic: To function, a Light Client must be part of exactly one specific network (e.g., Mainnet or Sepolia). It maintains connections to many peers (Full Nodes) simultaneously to verify data via Merkle proofs without needing to store the entire blockchain history.
+Logic: To function, a Light Client must be part of exactly one specific network (e.g., Mainnet or Sepolia). It maintains connections to many peers (Full Nodes) simultaneously.
 
