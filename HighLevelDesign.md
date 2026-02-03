@@ -4,40 +4,41 @@
 ### Entity relationship diagram
 ```mermaid
 erDiagram
-    USER ||--o{ WALLET : "owns"
+    USER ||--o{ WALLET : "manages"
     WALLET ||--o{ TRANSACTION : "signs"
-    WALLET ||--|| LIGHT_CLIENT : "interfaces with"
-    LIGHT_CLIENT ||--o{ P2P_NETWORK : "gossips with"
-    P2P_NETWORK ||--|{ BLOCK : "contains"
-    
+    TRANSACTION }o--|| LIGHT_CLIENT : "submitted_to"
+    LIGHT_CLIENT ||--o{ P2P_NETWORK : "broadcasts_to / syncs_with"
+
     USER {
-        string user_id
-        string username
+        string user_id PK
+        string auth_method
     }
-    
+
     WALLET {
-        string public_address
+        string public_address PK
         string derivation_path
-        float balance_eth
-    }
-
-    LIGHT_CLIENT {
-        string client_type "Lodestar/Helios"
-        string sync_status
-        string head_block_hash
-    }
-
-    P2P_NETWORK {
-        string chain_id
-        int peer_count
-        string protocol_version
+        string key_type "ECDSA"
     }
 
     TRANSACTION {
-        string tx_hash
+        string tx_hash PK
         int nonce
         uint256 value
-        uint256 gas_price
+        uint256 gas_limit
+        string signature
+    }
+
+    LIGHT_CLIENT {
+        string client_id PK
+        string flavor "Lodestar/Helios"
+        string sync_status
+        hash trusted_checkpoint
+    }
+
+    P2P_NETWORK {
+        int chain_id PK
+        string network_name "Mainnet/Sepolia"
+        int active_peers
     }
 
 ```
