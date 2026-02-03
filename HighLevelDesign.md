@@ -179,6 +179,42 @@ Security Note
 Note: All communication between GitHub, Terraform, and Azure is encrypted in transit via TLS 1.2+. The Service Principal follows the Principle of Least Privilege, granted only the specific permissions required to manage the ACI and Storage Account resources.
 
 ## Assumptions
+In any High-Level Design, documenting assumptions is critical because it defines the "guardrails" of your solution. If any of these change, the architecture might need a redesign.
 
-## Performance goals and constraints
+Here are the primary assumptions we’ve baked into this Helios-on-Azure architecture:
 
+1. Connectivity & Accessibility
+Public Reachability: We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Helios RPC endpoint.
+
+Provider Support: We assume MetaMask (or the user) is configured to use a Custom RPC URL pointing to your ACI instance rather than a standard provider like Infura.
+
+2. Security & Identity
+Stateless Secrets: We assume the Azure Service Principal has been granted the Contributor or a custom Network/Contributor role at the Resource Group level, and that these credentials are securely rotated within GitHub Secrets.
+
+Unauthenticated RPC: By default, Helios provides an open RPC port. We are assuming for this high-level view that additional layers (like an Nginx sidecar with Basic Auth or an Azure API Management gateway) are either out of scope or not yet required.
+
+3. Persistence & Performance
+SMB Compatibility: We assume the Helios binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
+
+Clock Sync: Light clients are sensitive to time. We assume the underlying Azure host maintains an accurate system clock (via NTP) for block header validation.
+
+4. Ethereum Network Protocol
+P2P Openness: We assume Azure’s Network Security Group (NSG) allows outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Helios can find peers.
+
+Checkpoint Trust: We assume the developer provides a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Helios to sync securely and quickly.
+
+## Technical constraints
+
+| Category       | Constraint       | Requirement / Value               | Reason                                                                 |
+|:---------------|:-----------------|:----------------------------------|:----------------------------------|
+| **Compute** | Memory (RAM)     | Min. 2GB                          | Handles P2P networking overhead and cryptographic signature verification. |
+| **Compute** | CPU              | 1 vCPU (Linux)                    | Helios is efficient; a single core is sufficient for light client header syncing. |
+| **Storage** | Persistence      | Azure File Share (SMB)            | Ensures the client doesn't re-sync the entire header chain on container restart. |
+| **Storage** | Capacity         | 5GB - 10GB                        | Plenty of overhead for the header database and local logs.             |
+| **Networking** | Inbound Port     | 8545 (TCP)                        | Default RPC port for MetaMask/User communication.                      |
+| **Networking** | Outbound Ports   | 30303 (TCP) / 9000 (UDP)          | Required for Ethereum execution and consensus layer peer discovery.    |
+| **Authentication**| IAM           | Entra ID Service Principal        | Required for GitHub Actions to manage Azure resources via Terraform.    |
+
+## Networking Security
+
+## Monitoring
