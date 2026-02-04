@@ -53,7 +53,8 @@ graph TD
 
 ### Explanation of data flow diagram
 
-The user and the wallet creat a signed request which is sent to the light node for 
+The user and the wallet creates a signed request which is sent to the light node for validation. If the transaction is formatted correctly, the user can be verified, and has enough funds, the transaction is then broadcast to the Ethereum network by the light node. The transaction is added to the Mempool where it waits to ultimately be processed, any relevant code is executed and resulting state changes are added to a new block. The light client receives a copy of the relevant block headers to update its local state.
+
 | Process | Input | Output | Logic / Transformation |
 | :--- | :--- | :--- | :--- |
 | **1.0 Sign Transaction** | Intent & Private Key | Signed Tx Payload | The Wallet retrieves the private key to apply a cryptographic signature to the transaction parameters (nonce, gas, data). |
@@ -129,7 +130,7 @@ sequenceDiagram
     actor Dev as Developer
     participant GH as GitHub Actions
     participant TF as Terraform Cloud
-    participant Azure as Azure (SPN/ACI)
+    participant Azure as Azure (ACI/Helios)
     participant FS as Azure File Share
     participant BC as Ethereum P2P
 
@@ -145,10 +146,16 @@ sequenceDiagram
     Azure->>FS: Load existing Chain Data/Keys
     Azure->>BC: Sync Block Headers (P2P)
     
-    Note over Dev, BC: Phase 3: User Interaction
+    Note over Azure, BC: Phase 3: User Interaction
     actor User as MetaMask User
-    User->>Azure: Send RPC Request
-    Azure-->>User: Return Verified Data/Proof
+    participant Wallet as Local Wallet (Vault)
+    
+    User->>Wallet: Initiate Transaction
+    Wallet->>Wallet: Sign Tx with Private Key
+    User->>Azure: Send RPC Request (eth_sendRawTransaction)
+    Azure->>Azure: Validate Format, Sig & Balance
+    Azure-->>User: Return Response (Verified Block Headers/Tx Hash)
+    Azure->>BC: Broadcast Transaction to Network
 ```
 
 ### Explanation of sequence diagram
