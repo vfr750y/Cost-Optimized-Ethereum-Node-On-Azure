@@ -146,7 +146,7 @@ sequenceDiagram
     Azure->>FS: Load existing Chain Data/Keys
     Azure->>BC: Sync Block Headers (P2P)
     
-    Note over User, BC: Phase 3: User Interaction
+    Note over User, Azure: Phase 3: User Interaction
     actor User as MetaMask User
     participant Wallet as Local Wallet (Vault)
     
@@ -155,6 +155,8 @@ sequenceDiagram
     User->>Azure: 3. Send RPC Request (URL)
     Azure->>Azure: 4. Validate (Sig, Nonce, Balance)
     Azure-->>User: 5. Response (Verified Headers/Hash)
+    
+    Note over Azure, BC: Phase 4: Network Propagation
     Azure->>BC: 6. Broadcast Signed Tx to Network
 ```
 
