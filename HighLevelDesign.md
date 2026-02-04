@@ -146,16 +146,16 @@ sequenceDiagram
     Azure->>FS: Load existing Chain Data/Keys
     Azure->>BC: Sync Block Headers (P2P)
     
-    Note over Azure, BC: Phase 3: User Interaction
+    Note over User, BC: Phase 3: User Interaction
     actor User as MetaMask User
     participant Wallet as Local Wallet (Vault)
     
-    User->>Wallet: Initiate Transaction
-    Wallet->>Wallet: Sign Tx with Private Key
-    User->>Azure: Send RPC Request (eth_sendRawTransaction)
-    Azure->>Azure: Validate Format, Sig & Balance
-    Azure-->>User: Return Response (Verified Block Headers/Tx Hash)
-    Azure->>BC: Broadcast Transaction to Network
+    User->>Wallet: 1. Request Signature
+    Wallet->>Wallet: 2. Sign Tx (Private Key)
+    User->>Azure: 3. Send RPC Request (URL)
+    Azure->>Azure: 4. Validate (Sig, Nonce, Balance)
+    Azure-->>User: 5. Response (Verified Headers/Hash)
+    Azure->>BC: 6. Broadcast Signed Tx to Network
 ```
 
 ### Explanation of sequence diagram
