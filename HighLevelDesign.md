@@ -162,58 +162,31 @@ sequenceDiagram
 
 ### Explanation of sequence diagram
 Operational Process Flow
-The lifecycle of the Helios Light Client system is categorized into three distinct phases: Infrastructure Orchestration, Runtime Initialization, and Client Interaction.
+Phase 1: Deployment – The Developer uses an automated "Infrastructure as Code" pipeline. When changes are pushed to GitHub, Terraform Cloud authenticates with Azure to deploy or update the Light Node (Helios) within a container. This phase ensures the environment is consistent and uses persistent storage to keep the node's history.
 
-1. Infrastructure Orchestration (CI/CD)
-The process begins when a developer pushes updated Terraform configurations to the GitHub repository.
+Phase 2: Runtime – Once the container is live, the Light Node begins its background work. It loads any existing data from the file share and connects to the Ethereum P2P Network to sync the latest block headers. This creates a trusted, up-to-date window into the blockchain without needing to download the entire database.
 
-Authentication: GitHub Actions retrieves the Azure Service Principal credentials from GitHub Secrets to establish a secure session with the cloud environment.
+Phase 3: User Interaction – This is the active loop between the user and their node. The MetaMask User signs a transaction locally (keeping their keys private), then sends that signed request to the Azure Light Node via an RPC URL. The node validates the transaction against its synced headers and sends back a response, giving the user immediate, verified confirmation.
 
-State Management: Terraform Cloud calculates the "diff" between the current infrastructure and the desired state. It communicates with the Azure Storage Account to update the state file, ensuring a "single source of truth."
-
-Provisioning: Upon approval, Terraform issues commands to the Azure Resource Manager to deploy or update the Azure Container Instance (ACI).
-
-2. Runtime Initialization & Persistence
-Once the container is provisioned, the Helios binary starts within the Linux environment.
-
-Volume Mounting: The ACI mounts the Azure File Share using the SMB protocol. This allows the Helios client to access persistent data (such as synced headers and local database files) that survives container restarts.
-
-Network Synchronization: Helios initiates a P2P handshake with the Ethereum network. It begins tracking the Sync Committee and downloading the latest block headers to ensure it is at the "head" of the chain.
-
-3. User Interaction (The RPC Loop)
-The final phase represents the steady-state operation where the system provides value to the end-user.
-
-Request Handling: A user (via MetaMask) sends a JSON-RPC request to the ACI's public IP/FQDN.
-
-Verification: Helios does not blindly trust the data. It retrieves the necessary Merkle proofs from the P2P network, verifies them against its locally stored trusted headers, and returns a cryptographically secured response to the user.
-
-Security Note
-Note: All communication between GitHub, Terraform, and Azure is encrypted in transit via TLS 1.2+. The Service Principal follows the Principle of Least Privilege, granted only the specific permissions required to manage the ACI and Storage Account resources.
+Phase 4: Network Propagation – After the Light Node confirms the transaction is valid, it acts as a gateway to the rest of the world. it broadcasts the signed payload to the broader Ethereum P2P Network, where it enters the mempool to be picked up by validators and permanently recorded in a block.
 
 ## Assumptions
-In any High-Level Design, documenting assumptions is critical because it defines the "guardrails" of your solution. If any of these change, the architecture might need a redesign.
+Here are the primary assumptions for this architecture:
 
-Here are the primary assumptions we’ve baked into this Helios-on-Azure architecture:
 
-1. Connectivity & Accessibility
-Public Reachability: We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Helios RPC endpoint.
+**Public Reachability:** We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Helios RPC endpoint.
 
-Provider Support: We assume MetaMask (or the user) is configured to use a Custom RPC URL pointing to your ACI instance rather than a standard provider like Infura.
+**Provider Support:** We assume MetaMask (or the user) is configured to use a Custom RPC URL pointing to your ACI instance rather than a standard provider like Infura.
 
-2. Security & Identity
-Stateless Secrets: We assume the Azure Service Principal has been granted the Contributor or a custom Network/Contributor role at the Resource Group level, and that these credentials are securely rotated within GitHub Secrets.
+**Role Based Access Control:** We assume the Azure Service Principal has been granted the Contributor or a custom Network/Contributor role at the Resource Group level, and that these credentials are securely rotated within GitHub Secrets.
 
-Unauthenticated RPC: By default, Helios provides an open RPC port. We are assuming for this high-level view that additional layers (like an Nginx sidecar with Basic Auth or an Azure API Management gateway) are either out of scope or not yet required.
+**SMB Compatibility:** We assume the Helios binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
 
-3. Persistence & Performance
-SMB Compatibility: We assume the Helios binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
+**Clock Sync:** Light clients are sensitive to time. We assume the underlying Azure host maintains an accurate system clock (via NTP) for block header validation.
 
-Clock Sync: Light clients are sensitive to time. We assume the underlying Azure host maintains an accurate system clock (via NTP) for block header validation.
+**Network configuration:** We assume Azure’s Network Security Group (NSG) can allow outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Helios can find peers.
 
-4. Ethereum Network Protocol
-P2P Openness: We assume Azure’s Network Security Group (NSG) allows outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Helios can find peers.
-
-Checkpoint Trust: We assume the developer provides a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Helios to sync securely and quickly.
+**Checkpoint:** The developer can provide a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Helios to sync securely and quickly. Also that the checkpoint can be updated, saved and can be used to resync the light node after a shutdown of any length.
 
 ## Technical constraints
 
@@ -227,6 +200,41 @@ Checkpoint Trust: We assume the developer provides a trusted Weak Subjectivity C
 | **Networking** | Outbound Ports   | 30303 (TCP) / 9000 (UDP)          | Required for Ethereum execution and consensus layer peer discovery.    |
 | **Authentication**| IAM           | Entra ID Service Principal        | Required for GitHub Actions to manage Azure resources via Terraform.    |
 
-## Networking Security
+## Security considerations
+
+### Networking security
+We only want to allow inbound RPC traffic from our metamask wallet to the container running the light node. We only want to allow outbound Ethereum based traffic between the light node and its peers. All other traffic should be blocked.
+
+Choosing the correct Azure Container App environment type is critical when considering networking security for the container running the light node.
+There are 2 environment types to choose from.  
+
+To secure a **Lodestar Light Client** in **Azure Container Instance (ACI)** without using the premium Azure Firewall, you must leverage **Virtual Network (VNet) Integration** and **Network Security Groups (NSGs)**.
+
+Since ACI instances in a VNet do not receive a public IP address by default, you will need an **Azure Load Balancer** to handle inbound traffic from your specific IP and a **NAT Gateway** to provide a stable outbound identity for the Ethereum network.
+
+https://learn.microsoft.com/en-us/azure/container-apps/environment 
+
+
+https://learn.microsoft.com/en-us/azure/container-apps/networking 
+https://learn.microsoft.com/en-us/azure/container-apps/custom-virtual-networks?tabs=workload-profiles-env 
+
+locking down inbound traffic via NSG or Firewall on an external workload profiles environment isn't supported.
+
+
+	The Container Apps runtime initially generates a fully qualified domain name (FQDN) used to access your app. 
+    Restrict inbound traffic to your container app by IP address.
+    Configure client certificate authentication (also known as mutual TLS or mTLS) for your container app.
+
+### OS hardening
+
 
 ## Monitoring
+
+Azure Container Apps environments provide centralized logging capabilities through integration with Azure Monitor and Application Insights.
+
+By default, all container apps within an environment send logs to a common Log Analytics workspace, making it easier to query and analyze logs across multiple apps. These logs include:
+
+Container stdout/stderr streams
+Container app scaling events
+Dapr sidecar logs (if Dapr is enabled)
+System-level metrics and events
