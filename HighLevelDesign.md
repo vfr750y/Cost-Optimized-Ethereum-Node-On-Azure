@@ -1,5 +1,7 @@
 # High Level Design
 
+## Purpose and scope of this document
+This high level design specifies all relevant components of the proposed solution, their interactions and other relevant considerations such as risks and assumptions without needing to disclose implemented code or configuration settings. It aims to give the reader, in not overly technical terms, an understanding of what will be implemented and how it will work. It is necessary to describe, at an early stage, the actors in the system and the relationship between them, hence the entity relationship diagram. After that the flow of data between the entities is described. Once we are clear on the basic description of the system, we begin to examine the various components of the system and how they fit together, this is done using the components list and the high level architecture diagram. A sequence diagram describes the lifecycle of the system including user interactions. High level constraints describe the technical limitations within which the system is designed. In addition to the logical architecture, an overview of network security and monitoring is also given. These sections constitute the high level design, which aims to give a full description of the proposed system.
 
 ## Entity relationship diagram
 
@@ -12,30 +14,29 @@ erDiagram
 ```
 
 ### Diagram explanation
-1. User to Wallet
-An individual user acts as the owner of the cryptographic keys.
-Logic: A User must exist for a Wallet to be managed, but a new User might not have created a Wallet yet (hence "Zero or Many"). However, a Wallet is logically tied to exactly one owner for accountability and access control.
+1. **User to Wallet:**
+An individual user acts as the owner of their private keys. A User must exist for a Wallet to be managed, but a new User might not have created a Wallet yet (hence "Zero or Many"). However, a Wallet is logically tied to exactly one owner for accountability and access control.
 
-2. Wallet to Transaction
-The Wallet uses its private key to digitally sign data payloads, transforming them into valid Ethereum transactions.
-Logic: A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature.
+2. **Wallet to Transaction:**
+The Wallet uses its private key to digitally sign data payloads, transforming them into valid Ethereum transactions. A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature.
 
-3. Transaction to Light Client
-The signed Transaction is sent to the Light Client.
-Logic: A Light Client acts as a gateway; it can receive many different transactions from various sources. From the perspective of the Transaction, it is submitted to one specific node to enter the network, though it may eventually exist on all nodes.
+3. **Transaction to Light Client:**
+The signed Transaction is sent to the Light Client. A Light Client acts as a gateway; it can receive many different transactions from various sources. From the perspective of the Transaction, it is submitted to one specific node to enter the network, though it may eventually exist on all nodes.
 
-4. Light Client to Ethereum Node Network
-The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions.
-Logic: To function, a Light Client must be part of exactly one specific network (e.g., Mainnet or Sepolia). It maintains connections to many peers (Full Nodes) simultaneously.
+4. **Light Client to Ethereum Node Network:**
+The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions. It maintains connections to many peers (Full Nodes) simultaneously.
 
 ## Data flow diagram
 ```mermaid
 graph TD
     User((User))
-    Vault[(Wallet Key Vault)]
     
-    subgraph LC [Light Client]
-        P1[1.0 Sign Transaction]
+    subgraph LocalWallet [User Wallet / Environment]
+        Vault[(Private Key Vault)]
+        Signer[1.0 Create & Sign Transaction]
+    end
+    
+    subgraph LC [Light Client Node]
         P2[2.0 Validate Transaction]
         P3[3.0 Broadcast to Network]
     end
@@ -43,14 +44,16 @@ graph TD
     Network((Ethereum P2P Network))
 
     %% Data Flows
-    User -->|Transaction Request| P1
-    Vault -->|Private Key Access| P1
-    P1 -->|Signed Payload| P2
-    P2 -->|Validated Raw Tx| P3
+    User -->|Initiates Tx| Signer
+    Vault -->|Sign with Private Key| Signer
+    Signer -->|Signed Transaction| P2
+    P2 -->|Check Nonce/Balance/Signature| P3
     P3 <-->|Gossip Protocol / Block Headers| Network
 ```
 
 ### Explanation of data flow diagram
+
+The user and the wallet creat a signed request which is sent to the light node for 
 | Process | Input | Output | Logic / Transformation |
 | :--- | :--- | :--- | :--- |
 | **1.0 Sign Transaction** | Intent & Private Key | Signed Tx Payload | The Wallet retrieves the private key to apply a cryptographic signature to the transaction parameters (nonce, gas, data). |
