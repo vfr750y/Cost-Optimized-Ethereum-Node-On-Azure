@@ -1,6 +1,6 @@
 Date 27-Jan-2026
 
-## Why build a test Ethereum node?
+## Outline of requirements
 This project aims to provide benefits by doing the following:
 
 - Providing a GitHub repository containing project plan, implementation steps and research findings.
@@ -8,36 +8,40 @@ This project aims to provide benefits by doing the following:
 - Research and minimise costs
 - Providing everyone with a free learning opportunity
 
+## Feasibility Study
+Investigate the different types of Ethereum node.
+Determine their minimum and recommended requirements.
+Compare the cost of each type.
+Decide on a best fit.
 There are several different types of Ethereum node:
 
-## Assumptions and project constraints
+### Assumptions and project constraints
 
 - Minimising costs is highest priority.
 - We are not concerned with the capability of the deployed node, only that it is able to communicate with Ethereum blockchain (testnet or mainnet).
 - Azure will be used as the platform for deployment.
 - A deployment method using Infrastructure as Code is preferred.
 
-## Types of Node
+### Types of Node
 
-### Full node.
+#### Full node.
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly. There are two versions of the full node, default and archive. The difference between them is the amount of chain data accessible. Archive nodes contain the entire chain from the genesis block (around 15 to 18 TB). The default behaviour for a full node is to prune the data to save space. A default node is around 1.5 to 2 TB.
 
-#### How does a full node communicate?
 The node discovers other nodes, then it connects with them via a handshake, then gossips with other nodes. A node will typically communicate with between 50 and 100 peers using default settings.
 For normal operations (there are a few edge cases) nodes communicate with other nodes on the peer-to-peer network (P2P).
 
-### Validator node
+#### Validator node
 A third component called a validator can be added to the full node. The validator is used as the signing agent for new blocks. If all three components, execution client, consensus client and validator client are installed together, new blocks on the Ethereum chain can be added with that node. A validating node also needs a minimum stake of 32 ETH to allow it to be an active participant in the "Proof of Stake" system. For the purposes of this proof of concept, due to the staking cost, a validator is out of scope.
 
-### Light node
+#### Light node
 Light clients are a way that low-power devices, like cell phones, can do self validation of transactions and dApp state. Unlike full nodes, light clients do not download and store the entire blockchain. Instead, they download only the headers of each block and employ Merkle proofs to verify transactions. A light node allows users to verify state directly without having to use a third party like Infura.
 
-### Stateless light node
+#### Stateless light node
 Stateless clients verify blockchain data without storing local state or synchronizing with the network. Stateless clients operate entirely on demand using compact cryptographic proofs: Merkle proofs for execution-layer data inclusion, and consensus proofs — such as sync committee attestations or aggregated zk-proofs — to validate that the block originates from the correct validator set and belongs to the canonical chain.
 
-## Basic cost analysis as of 29-Jan-2026
+### Basic cost analysis as of 29-Jan-2026
 
-### Full node on Ethereum mainnet (default)
+#### Full node on Ethereum mainnet (default)
 Storage - Minimum 2TB - Recommended 4TB - 
 Note the default full node is deployed in pruned mode (not archive mode). The chain size for a Geth client is currently ~1.5TB 
 (A Geth client is a particular deployment of the ETH node written in Go)
@@ -51,7 +55,7 @@ Using the Azure pricing calculator to give a basic estimate of costs for a full 
 | Data egress  | 2TB             | 114            | Internet based and routed over internet|
 | **Total**    |                 | **502**        |                                        |
 
-### Sepolia testnet full node (default)?
+#### Sepolia testnet full node (default)?
 As the Sepolia test net is not used for production scale transactions and only contains a chain created in October 2021 the storage required is significantly reduced. As storage is the main cost for an Azure node, reducing the disk size required should make a node cheaper to run. In this case, we won't be able to interact with the Ethereum mainnet but it will still provide a proof of concept.
 
 Storage - Minimum 1TB - Recommended 2TB (The current chain size for Sepolia is around 650GB depending on the client version).
@@ -65,7 +69,7 @@ Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 | **Total**    |                 | **333**        |                                        |
 
 
-### Light node (e.g. Lodestar) node cost comparison.
+#### Light node (e.g. Lodestar) node cost comparison.
 
 
 Storage - Minimum 2GB - With a light node, only the headers are synchronised.
@@ -80,7 +84,7 @@ Data egress - <10GB per month
 | **Total**    |                 | **9**          |                                        |
 
 
-### Light node and Stateless light node on Azure Container instance
+#### Light node and Stateless light node on Azure Container instance
 
 An Azure container instance is charged by the second.
 A light node requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
