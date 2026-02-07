@@ -3,7 +3,7 @@
 My early thinking is that this project will follow these steps:
 
 ## Project plan
-### Step 1) Feasibility study and scoping exercise
+### Step 1) Requirements, feasibility, cost analysis and scope
     - Requirements analysis why am I doing this?
     - Assumptions
     - What are the different types of node? 
