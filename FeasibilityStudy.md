@@ -110,7 +110,7 @@ Here is the cost breakdown for an Azure container instance:
 | Mainnet Full Node | 502.00 | 2TB+ SSD & High Egress |
 | Sepolia Testnet | 333.00 | 1TB Storage |
 | Light Node (VM) | 9.64 | Minimal 30GB Storage |
-| Light Node (ACI)| 6.10 | Serverless / No persistent disk |
+| Light Node (ACI)| 6.10 | Persistent File Share|
 
 ## Definition of scope
 To meet the requirements of this project we only need to be running simple node such as a light node on a test network. In this case, a standard Ethereum light node on an Azure Container Instance seems to be the best fit. Stateless clients rely on proofs being provided and don't have a heartbeat interaction with other nodes. Whilst this means they can run with virtually no resources, they don't provide the best use case for a proof of concept. It is more likely that at this time, light nodes such as Lodestar will be widely used and supported. The technical aspects of running a light node provide ample opportunity for showcasing a whole solution including version control and infrastructure as code, Azure container instance, virtual network configuration, security and monitoring. 
@@ -148,4 +148,4 @@ Keeping a node running creates "Peer Stickiness." If you keep turning it off and
 A light node gossips with its peers every 12 seconds, sampling parts of the blockchain as they appear. If they can successfully pull 32 random pieces of a block's data, there is a 99.999% mathematical certainty that the entire block is available. Ethereum nodes keep a "scoring" system for their peers. If your light node is constantly disappearing (going offline), full nodes will rank you as a "low-quality peer" and may deprioritize your requests during busy periods. High uptime helps you maintain connections to high-quality, high-speed full nodes.
 
 ### Azure File Share
-It is recommended to use NFS instead
+It is recommended to use NFS 4.1 instead of SMB. NFS 4.1 is fully POSIX-compliant. Databases like LevelDB (used by Lodestar) require strict, reliable file locking. SMB’s locking mechanism often conflicts with database operations over a network, leading to "Database locked" errors or permanent corruption
