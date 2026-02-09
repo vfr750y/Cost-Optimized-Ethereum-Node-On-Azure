@@ -84,7 +84,7 @@ Data egress - <10GB per month
 | **Total**    |                 | **9**          |                                        |
 
 
-#### Light node and Stateless light node on Azure Container instance
+#### Light node on Azure Container instance
 
 An Azure container instance is charged by the second.
 A light node requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
@@ -96,9 +96,24 @@ Here is the cost breakdown for an Azure container instance:
 |:-------------|:----------------|:---------------|:-------------------------------------------------------|
 | CPU          | 1vCPU           | 1              | est 24 hours per month                                 |
 | Memory       | 1GB             | 0.1            | est 24 hours per month                                 |
-| Managed Disk | 50GB Temp disk  | 0              | Sequential read/write ~4000, Randowm Read/Write ~ 750  |
+| File share   | 32GB MIN        | 5              | Min 3000 iops   100 MiB/s|
 | Data egress  | 10GB            | 0              | First 100GB is free  per subscription                  |
-| **Total**    |                 | **1.1**        |                                                        |
+| **Total**    |                 | **6.1**        |                                                        |
+
+#### Light node on Azure Container Apps
+
+
+
+Here is the cost breakdown for Azure container Apps:
+
+| Item name    | Item value      | Cost (USD p/m) |Description                                             |
+|:-------------|:----------------|:---------------|:-------------------------------------------------------|
+| CPU          | 1vCPU           | 0              | up to 2 million requests per month free                |
+| Memory       | 1GB             | 0              | up to 2 million requests per month free                |
+| File share   | 32GB MIN        | 5              | Min 3000 iops   100 MiB/s|                             |
+| Data egress  | 10GB            | 0              | First 100GB is free  per subscription                  |
+| **Total**    |                 | **5  **        |                                                        |
+
 
 ### Summary of cost analysis
 
