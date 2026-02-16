@@ -225,9 +225,6 @@ locking down inbound traffic via NSG or Firewall on an external workload profile
     Restrict inbound traffic to your container app by IP address.
     Configure client certificate authentication (also known as mutual TLS or mTLS) for your container app.
 
-### OS hardening
-
-
 ## Monitoring
 
 Azure Container Apps environments provide centralized logging capabilities through integration with Azure Monitor and Application Insights.
