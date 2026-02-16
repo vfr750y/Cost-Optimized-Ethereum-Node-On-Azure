@@ -3,13 +3,16 @@
 ## GitHub Repository Structure
 
 
-Plaintext
+```Plaintext
 .
 ├── .github/workflows/deploy.yml  # GitHub Actions CI/CD
 ├── main.tf                       # Terraform: ACI, Storage, and Logic
 ├── variables.tf                  # Variable definitions
 ├── outputs.tf                    # IP and Connection info
 └── providers.tf                  # Azure provider config
+
+```
+
 
 ## Terraform Configuration (main.tf)
 
