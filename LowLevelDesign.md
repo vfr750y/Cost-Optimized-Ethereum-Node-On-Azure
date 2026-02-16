@@ -1,83 +1,219 @@
-To secure a **Lodestar Light Client** in **Azure Container Instance (ACI)** without using the premium Azure Firewall, you must leverage **Virtual Network (VNet) Integration** and **Network Security Groups (NSGs)**.
-
-Since ACI instances in a VNet do not receive a public IP address by default, you will need an **Azure Load Balancer** to handle inbound traffic from your specific IP and a **NAT Gateway** to provide a stable outbound identity for the Ethereum network.
-
----
-
-### 1. Required Azure Resources
-
-* **Virtual Network (VNet):** A private network to house your client.
-* **Delegated Subnet:** A subnet with the `Microsoft.ContainerInstance/containerGroups` delegation.
-* **Network Security Group (NSG):** Acts as your primary filter for both inbound and outbound traffic.
-* **Standard Public Load Balancer:** To provide a public entry point for your specific "End User IP."
-* **NAT Gateway + Public IP:** To ensure the Ethereum network sees a consistent IP from your client and to allow outbound connectivity from the VNet.
-
----
-
-### 2. Configuration Steps
-
-#### Step A: Configure the Virtual Network & Subnet
-
-1. Create a **VNet** (e.g., `10.0.0.0/16`).
-2. Create a **Subnet** (e.g., `10.0.1.0/24`) and set **Subnet Delegation** to `Microsoft.ContainerInstance/containerGroups`.
-3. Assign the **NSG** (created in Step B) to this subnet.
-
-#### Step B: Define NSG Security Rules
-
-The NSG is the core "firewalling" component in this setup.
-
-**Inbound Rules (Restricting to your IP):**
-| Priority | Name | Port | Protocol | Source | Action | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 100 | AllowUserAPI | 9596 | TCP | [Your Public IP] | **Allow** | Restricted access to Lodestar REST API. |
-| 65000 | DenyAllInbound | Any | Any | Any | **Deny** | Blocks all other internet access. |
-
-**Outbound Rules (Ethereum Network):**
-| Priority | Name | Port | Protocol | Destination | Action | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 100 | AllowBeaconAPI | 443 | TCP | `Internet`* | **Allow** | Connects to Sepolia Beacon API (HTTPS). |
-| 110 | AllowP2PGossip | 9000, 30303 | Any | `Internet` | **Allow** | Allows Ethereum P2P node communication. |
-| 65000 | DenyAllOutbound | Any | Any | `Internet` | **Deny** | Blocks all other outbound internet traffic. |
-
-> [!NOTE]
-> *Because NSGs do not support FQDNs (like `lodestar-sepolia.chainsafe.io`), you must either use the `Internet` tag on the specific ports required or manually find and whitelist the IP addresses of your preferred Ethereum RPC/Beacon providers.
-
-#### Step C: Setup Inbound & Outbound Connectivity
-
-1. **Inbound (Load Balancer):** Create a **Standard Public Load Balancer**.
-* Create a **Frontend IP** configuration with a new Public IP.
-* Create a **Load Balancing Rule** mapping Public Port `9596` to Backend Port `9596`.
-* Add the **Private IP** of your ACI (assigned after deployment) to the Backend Pool.
 
 
-2. **Outbound (NAT Gateway):** Create a **NAT Gateway** and associate it with a Public IP.
-* Attach the NAT Gateway to your ACI Subnet. This prevents the ACI from using random Azure outbound IPs, which some Ethereum nodes might throttle.
+## GitHub Repository Structure
 
 
+Plaintext
+.
+├── .github/workflows/deploy.yml  # GitHub Actions CI/CD
+├── main.tf                       # Terraform: ACI, Storage, and Logic
+├── variables.tf                  # Variable definitions
+├── outputs.tf                    # IP and Connection info
+└── providers.tf                  # Azure provider config
 
-#### Step D: Deploy the Lodestar Light Client
+## Terraform Configuration (main.tf)
 
-Deploy the ACI into the delegated subnet using the `az container create` command. Ensure you specify the Sepolia network and your trusted checkpoint.
+This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for your laptop. We use Azure Files to persist the node state and Tailscale's identity.
 
-```bash
-az container create \
-  --resource-group MyResourceGroup \
-  --name lodestar-sepolia-client \
-  --image chainsafe/lodestar:latest \
-  --vnet MyVNet \
-  --subnet MyACISubnet \
-  --command-line "lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229" \
-  --ports 9596 9000 30303
+```Terraform
+# main.tf
 
+resource "azurerm_resource_group" "eth_node" {
+  name     = "rg-lodestar-node"
+  location = var.location
+}
+
+# Storage for Node Sync State & Tailscale Auth
+resource "azurerm_storage_account" "storage" {
+  name                     = "stlodestardata${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.eth_node.name
+  location                 = azurerm_resource_group.eth_node.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS" # Lowest cost
+}
+
+resource "azurerm_storage_share" "lodestar_share" {
+  name                 = "lodestar-data"
+  storage_account_name = azurerm_storage_account.storage.name
+  quota                = 5 # 5GB is plenty for a light node
+}
+
+# The Container Group
+resource "azurerm_container_group" "node_group" {
+  name                = "lodestar-light-node"
+  location            = azurerm_resource_group.eth_node.location
+  resource_group_name = azurerm_resource_group.eth_node.name
+  os_type             = "Linux"
+  ip_address_type     = "Public" # Required for P2P Discovery
+  dns_name_label      = "lodestar-node-${random_string.suffix.result}"
+
+  # Container 1: Lodestar
+  container {
+    name   = "lodestar"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+
+    commands = [
+      "node", "light-client",
+      "--network", "mainnet",
+      "--checkpointSyncUrl", "https://beaconstate.ethpandaops.io/",
+      "--rest",
+      "--rest.address", "0.0.0.0",
+      "--rest.port", "9596",
+      "--rootDir", "/data"
+    ]
+
+    ports {
+      port     = 9000
+      protocol = "TCP"
+    }
+    ports {
+      port     = 9000
+      protocol = "UDP"
+    }
+
+    volume {
+      name                 = "lodestar-storage"
+      mount_path           = "/data"
+      share_name           = azurerm_storage_share.lodestar_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
+  }
+
+  # Container 2: Tailscale Sidecar
+  container {
+    name   = "tailscale"
+    image  = "tailscale/tailscale:latest"
+    cpu    = "0.1"
+    memory = "0.2"
+
+    environment_variables = {
+      TS_AUTHKEY   = var.tailscale_key
+      TS_STATE_DIR = "/var/lib/tailscale"
+    }
+
+    volume {
+      name                 = "tailscale-state"
+      mount_path           = "/var/lib/tailscale"
+      share_name           = azurerm_storage_share.lodestar_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
+  }
+}
+
+resource "random_string" "suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
 ```
 
----
+## GitHub Actions Workflow (deploy.yml)
+To automate this, you will store your Azure credentials and Tailscale key in GitHub Secrets.
 
-### Comparison of ACI vs. Azure Container Apps (ACA)
+Azure Service Principal: Create one using az ad sp create-for-rbac and save the JSON as AZURE_CREDENTIALS.
 
-Based on your investigation links, **Azure Container Apps** might actually be a simpler alternative for this specific requirement:
+Tailscale Key: Create an Auth Key (reusable recommended) in your Tailscale dashboard and save as TAILSCALE_KEY.
+```yaml
+YAML
+name: Deploy Lodestar Node
 
-* **Native Ingress Restrictions:** ACA allows you to set "IP Security Restrictions" directly in the portal without needing a Load Balancer or complex NSG rules.
-* **Scale to Zero:** If you aren't sending transactions 24/7, ACA can scale to zero to save costs, whereas ACI remains active.
+on:
+  push:
+    branches: [ main ]
 
-**Would you like me to draft the specific Azure CLI commands or a Bicep template to automate this entire "No Firewall" network setup?**
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve \
+          -var="tailscale_key=${{ secrets.TAILSCALE_KEY }}"
+```
+
+## Azure container instance details
+One container runs Lodestar, and the other runs a Tailscale sidecar.Lodestar Container: Handles P2P traffic and syncs via a checkpoint URL.Tailscale Sidecar: Creates a private, encrypted "mesh" tunnel between your ACI and your home laptop. This allows you to access the RPC port over a private IP, keeping it completely hidden from the public internet.2. Networking ConfigurationYou will expose only the essential ports to the public internet.PortTypePurposeExposure9000TCP/UDPEthereum P2P (Discovery)Public (Everyone)9596TCPLodestar REST/RPCPrivate (Localhost/Tailscale only)By not exposing port 9596 to the public IP of the ACI, you eliminate the risk of unauthorized RPC calls or DDoS attacks on your node.3. Step-by-Step Deployment
+
+Step A: Setup Persistence (Azure Files)Even a light node needs to save its "head" and sync state, or it will start from scratch every time the container restarts.Create a Standard LRS Storage Account (cheapest tier).Create a File Share (e.g., lodestar-data).
+
+Step B: Create the Deployment YAMLACI is best managed via a YAML file when using sidecars. Create a file named deploy-lodestar.yaml.
+
+```yaml
+YAMLapi-version: 2023-05-01
+location: eastus # Or your closest region
+name: lodestar-light-node
+type: Microsoft.ContainerInstance/containerGroups
+properties:
+  containers:
+  - name: lodestar
+    properties:
+      image: chainsafe/lodestar:latest
+      command: 
+      - node
+      - light-client
+      - --network
+      - mainnet
+      - --checkpointSyncUrl
+      - https://beaconstate.ethpandaops.io/ # Use a trusted community sync URL
+      - --rest
+      - --rest.address
+      - 0.0.0.0
+      - --rest.port
+      - "9596"
+      - --rootDir
+      - /data
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 2.0
+      volumeMounts:
+      - name: lodestar-storage
+        mountPath: /data
+  - name: tailscale # The security sidecar
+    properties:
+      image: tailscale/tailscale:latest
+      environmentVariables:
+      - name: TS_AUTHKEY
+        value: "tskey-auth-your-key-here" # Get this from tailscale.com
+      - name: TS_STATE_DIR
+        value: /var/lib/tailscale
+      resources:
+        requests:
+          cpu: 0.5
+          memoryInGB: 0.5
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: TCP
+      port: 9000
+    - protocol: UDP
+      port: 9000
+  volumes:
+  - name: lodestar-storage
+    azureFile:
+      shareName: lodestar-data
+      storageAccountName: yourstorageaccount
+      storageAccountKey: yourstoragekey
+```
+
+Step C: Deploy via Azure CLI
+Run the following command in your terminal:Bashaz container create --resource-group YourRG --file deploy-lodestar.yaml
+4. How to Connect from Your LaptopInstall Tailscale on your laptop.Once the ACI is running, it will appear in your Tailscale dashboard as a "machine" with a private IP (e.g., 100.x.y.z).On your laptop, simply point your dApp or script to:http://100.x.y.z:9596Why this is safe: Only devices authenticated to your Tailscale account can "see" the RPC port. To the rest of the world, your ACI only looks like a standard Ethereum peer on port 9000.
