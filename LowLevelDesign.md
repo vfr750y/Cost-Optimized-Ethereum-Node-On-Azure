@@ -219,4 +219,5 @@ properties:
 
 Step C: Deploy via Azure CLI
 Run the following command in your terminal:Bashaz container create --resource-group YourRG --file deploy-lodestar.yaml
-4. How to Connect from Your LaptopInstall Tailscale on your laptop.Once the ACI is running, it will appear in your Tailscale dashboard as a "machine" with a private IP (e.g., 100.x.y.z).On your laptop, simply point your dApp or script to:http://100.x.y.z:9596Why this is safe: Only devices authenticated to your Tailscale account can "see" the RPC port. To the rest of the world, your ACI only looks like a standard Ethereum peer on port 9000.
+4. How to Connect from Your LaptopInstall Tailscale on your laptop.Once the ACI is running, it will appear in your Tailscale dashboard as a "machine" with a private IP (e.g., 100.x.y.z).On your laptop, simply point your dApp or script to:http://100.x.y.z:9596
+Why this is safe: Only devices authenticated to your Tailscale account can "see" the RPC port. To the rest of the world, your ACI only looks like a standard Ethereum peer on port 9000.
