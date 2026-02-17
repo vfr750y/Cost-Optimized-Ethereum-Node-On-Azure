@@ -10,7 +10,7 @@ I'm expecting this project to happen in these stages:
 ### [1) Project plan](ProjectPlan.md)
 ### [2) Feasibility study and scope](FeasibilityStudy.md)
 ### [3) High level design](HighLevelDesign.md)
-### [4) Low level design]()
+### [4) Low level design](LowLevelDesign.md)
 ### [5) Implementation]()
 ### [6) Project de-brief ]()
 
