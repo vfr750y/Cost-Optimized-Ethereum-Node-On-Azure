@@ -235,11 +235,7 @@ Why this is safe: Only devices authenticated to your Tailscale account can "see"
 ## Detailed description of security risks and mitigations
 
 ## Detailed implementation steps
-This is a solid architectural foundation. You’ve successfully moved from a broad "VM + Software" idea to a sophisticated, cost-optimized **Multi-Container Group** on Azure Container Instances (ACI). Using **Tailscale** as a sidecar is an excellent engineering choice—it provides "Zero Trust" access to your RPC port without the complexity and cost of Azure Bastion or a VPN Gateway.
 
-As your I.T. systems engineer peer, I have reviewed your `LowLevelDesign.md`. Here is your detailed, step-by-step implementation plan, broken down by phases with specific verification gates.
-
----
 
 ## Phase 1: Bootstrapping & Identity
 Before Terraform can touch Azure, we need to build the "management plane."
