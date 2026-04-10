@@ -306,12 +306,9 @@ az storage account show --name $STORAGE_NAME --resource-group rg-lodestar-node -
 ### Step 2.1: Secure Tailscale Authentication
 
 1. Create your Tailscale Account (if not already created)
-Go to tailscale.com.
-
-Click "Get Started for Free" or "Log in".
-
-Sign in using a "Single Sign-On" (SSO) provider. Tailscale doesn't use passwords; it uses your existing identity from GitHub, Google, or Microsoft.
-
+- Go to tailscale.com.
+- Click "Get Started for Free" or "Log in".
+- Sign in using a "Single Sign-On" (SSO) provider. Tailscale doesn't use passwords; it uses your existing identity from GitHub, Google, or Microsoft.
 Recommendation: Use the same GitHub account you are using for this project to keep your "DevOps" identity consistent.
 
 2. Access the Admin Console
@@ -319,24 +316,15 @@ Once you are logged in, you will be taken to the Dashboard (this is the "Admin C
 
 3. Generate the Auth Key (The Step-by-Step)
 Now that you're in the console:
-
-Click on the Settings tab in the top navigation bar.
-
-On the left-hand sidebar, click Keys.
-
-In the Auth keys section, click the Generate auth key... button.
-
-Configure the settings exactly like this:
-
-Description: Give it a name like azure-eth-node.
-
-Reusable: Check this box. Since containers in ACI might restart, you want the new container instance to be able to use the same key to re-join your network.
-
-Ephemeral: Check this box. This is a "cleanliness" feature. It tells Tailscale: "If this container goes offline and doesn't come back for a while, delete it from my dashboard automatically."
-
-Expiration: Set it to whatever you feel comfortable with (e.g., 90 days). You'll just need to update your GitHub Secret when it expires.
-
-Click Generate key.
+- Click on the Settings tab in the top navigation bar.
+- On the left-hand sidebar, click Keys.
+- In the Auth keys section, click the Generate auth key... button.
+- Configure the settings exactly like this:
+- Description: Give it a name like azure-eth-node.
+- Reusable: Check this box. Since containers in ACI might restart, you want the new container instance to be able to use the same key to re-join your network.
+- Ephemeral: Check this box. This is a "cleanliness" feature. It tells Tailscale: "If this container goes offline and doesn't come back for a while, delete it from my dashboard automatically."
+- Expiration: Set it to whatever you feel comfortable with (e.g., 90 days). You'll just need to update your GitHub Secret when it expires.
+- Click Generate key.
 
 4. Secure the Key
 Copy the key immediately (it starts with tskey-auth-...).
