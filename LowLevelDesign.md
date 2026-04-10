@@ -240,19 +240,59 @@ Why this is safe: Only devices authenticated to your Tailscale account can "see"
 ## Phase 1: Bootstrapping & Identity
 Build the Terraform management plane
 
+### Step 1.0: Create the Target Resource Group
+Since the SPN will be restricted to this group, it needs to exist beforehand. Run this in your Azure Cloud Shell:
+
+```Bash
+# Set your variables
+RG_NAME="rg-lodestar-node"
+LOCATION="eastus" # or your preferred region
+
+# Create the Resource Group
+az group create --name $RG_NAME --location $LOCATION
+```
+
 ### Step 1.1: Azure Service Principal (SPN) Creation
 Create an identity for GitHub Actions.
-* **Action:** Run the following CLI command to create an SPN with "Contributor" rights at the Subscription level.
-    ```bash
-    az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
-      --scopes /subscriptions/{subscription-id} --sdk-auth
-    ```
-* **Verification:** Ensure the output JSON is saved. Test it locally by running `az login --service-principal -u <appId> -p <password> --tenant <tenantId>`.
+Now, create the SPN and restrict its "Contributor" role strictly to that group. 
+NOTE: replace {subscription-id}.
+
+```Bash
+az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
+  --scopes /subscriptions/{subscription-id}/resourceGroups/rg-lodestar-node \
+  --sdk-auth
+```
+
+Verification: After running this, go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
 
 ### Step 1.2: Terraform Backend Setup
 We need a place to store the `.tfstate` so GitHub Actions doesn't lose track of your resources.
-* **Action:** Manually create one "Bootstrap" Storage Account and a container named `tfstate`.
-* **Verification:** Run `az storage blob list --account-name <name> --container-name tfstate` to ensure it is reachable.
+* **Action:** Create your Terraform state Storage Account inside the same Resource Group (rg-lodestar-node).
+In the Azure Cloud Shell run the following commands
+```bash
+# 1. Generate a unique name for your storage account (must be globally unique)
+# This appends a random 4-character hex string to the name
+STORAGE_NAME="stethterraformstate$(openssl rand -hex 4)"
+RG_NAME="rg-lodestar-node"
+LOCATION="eastus"
+
+# 2. Create the storage account inside the scoped Resource Group
+az storage account create \
+  --name $STORAGE_NAME \
+  --resource-group $RG_NAME \
+  --location $LOCATION \
+  --sku Standard_LRS \
+  --encryption-services blob
+  --enable-versioning true
+
+# 3. Create the blob container for the state file
+az storage container create \
+  --name tfstate \
+  --account-name $STORAGE_NAME
+
+# 4. Display the name so you can copy it to your Terraform 'backend' config
+echo "Your Terraform Storage Account Name is: $STORAGE_NAME"
+```
 
 ---
 
