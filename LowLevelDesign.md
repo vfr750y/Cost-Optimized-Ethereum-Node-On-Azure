@@ -239,10 +239,10 @@ Why this is safe: Only devices authenticated to your Tailscale account can "see"
 ## Detailed implementation steps
 
 
-## Phase 1: Bootstrapping & Identity
+### Phase 1: Bootstrapping & Identity
 Build the Terraform management plane
 
-### Step 1.0: Create the Target Resource Group
+#### Step 1.0: Create the Target Resource Group
 Since the SPN will be restricted to this group, it needs to exist beforehand. Run this in your Azure Cloud Shell:
 
 ```Bash
@@ -254,7 +254,7 @@ LOCATION="eastus" # or your preferred region
 az group create --name $RG_NAME --location $LOCATION
 ```
 
-### Step 1.1: Azure Service Principal (SPN) Creation
+#### Step 1.1: Azure Service Principal (SPN) Creation
 Create an identity for GitHub Actions.
 Now, create the SPN and restrict its "Contributor" role strictly to that group. 
 NOTE: replace {subscription-id}.
@@ -267,7 +267,7 @@ az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
 
 Verification: After running this, go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
 
-### Step 1.2: Terraform Backend Setup
+#### Step 1.2: Terraform Backend Setup
 We need a place to store the `.tfstate` for GitHub Actions to keep track of resources.
 * **Action:** Create a Terraform state Storage Account inside the same Resource Group (rg-lodestar-node).
 In the Azure Cloud Shell run the following commands
@@ -302,8 +302,8 @@ az storage account show --name $STORAGE_NAME --resource-group rg-lodestar-node -
 
 ---
 
-## Phase 2: Repository & Secret Management
-### Step 2.1: Secure Tailscale Authentication
+### Phase 2: Repository & Secret Management
+#### Step 2.1: Secure Tailscale Authentication
 
 1. Create your Tailscale Account (if not already created)
 - Go to tailscale.com.
@@ -333,16 +333,16 @@ Warning: You will never see this key again once you close the pop-up.
 
 
 
-### Step 2.2: GitHub Secrets Injection
+#### Step 2.2: GitHub Secrets Injection
 * **Action:** Populate your GitHub Repository Secrets with:
     * `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
     * `TAILSCALE_KEY`
 * **Verification:** Create a dummy GitHub Action that prints "Secrets Loaded" (do not print the actual secrets!) to ensure the environment variables are mapping correctly.
-### 1. Create the Workflow File
+1. Create the Workflow File
 In your local repository (or directly in GitHub), create a new file at this exact path:
 `.github/workflows/verify-secrets.yml`
 
-### 2. Add the Test Code
+2. Add the Test Code
 Paste the following configuration into that file. This workflow doesn't install anything; it just checks if the "containers" for your secrets are populated.
 
 ```yaml
@@ -381,29 +381,27 @@ jobs:
 
 
 
-### 3. Run the Verification
-1.  **Commit and Push** this file to your GitHub repository.
-2.  Go to the **Actions** tab at the top of your GitHub repo page.
-3.  On the left sidebar, click on **"Verify Secrets Mapping"**.
-4.  Click the **"Run workflow"** dropdown button on the right and hit the green button.
+3. Run the Verification
+- **Commit and Push** this file to your GitHub repository.
+- Go to the **Actions** tab at the top of your GitHub repo page.
+- On the left sidebar, click on **"Verify Secrets Mapping"**.
+- Click the **"Run workflow"** dropdown button on the right and hit the green button.
 
-### 4. Interpreting the Results
+4. Interpreting the Results
 * **Green Checkmarks:** Your environment variables are correctly mapped. You are safe to proceed to the Terraform deployment.
 * **Red "X":** GitHub cannot find the secret. This usually means there is a **typo** between the name you gave the secret in the "Settings" tab and the name you used in the YAML file (e.g., `TAILSCALE_KEY` vs `TAILSCALE_AUTH_KEY`).
 
 ### Why this is "Best Practice"
 GitHub automatically masks secrets in logs (replacing them with `***`). However, if you accidentally echo a secret that isn't properly recognized as a secret, you could leak it to your logs. By using the `-n` (not empty) check in a shell script, we verify the **existence** of the data without ever risking the **exposure** of the data.
 
-Once this test passes, you have 100% confidence that your "Authentication Plumbing" is ready for the real deployment. Shall we move on to the Terraform `main.tf` logic next?
-
 ---
 
-## Phase 3: Infrastructure Deployment (The "Apply" Phase)
-### Step 3.1: Terraform Initialization
+### Phase 3: Infrastructure Deployment (The "Apply" Phase)
+#### Step 3.1: Terraform Initialization
 * **Action:** Trigger the GitHub Action by pushing your `main.tf` and `variables.tf`.
 * **Verification:** Check the **Terraform Init** logs in GitHub Actions to ensure the backend provider (Azure Storage) connects successfully.
 
-### Step 3.2: Resource Provisioning
+#### Step 3.2: Resource Provisioning
 * **Action:** Run the `terraform apply`.
 * **Verification:** * Navigate to the Azure Portal. 
     * Verify the **Resource Group** exists.
@@ -411,13 +409,13 @@ Once this test passes, you have 100% confidence that your "Authentication Plumbi
 
 ---
 
-## Phase 4: Container Orchestration & Networking
-### Step 4.1: Sidecar Initialization (Tailscale)
+### Phase 4: Container Orchestration & Networking
+#### Step 4.1: Sidecar Initialization (Tailscale)
 Once ACI starts, the Tailscale container must join your "Tailnet."
 * **Action:** Monitor the Tailscale Admin Console.
 * **Verification:** A new machine (e.g., `lodestar-light-node`) should appear in your Tailscale dashboard with a **100.x.y.z** IP address.
 
-### Step 4.2: Lodestar Startup & Checkpoint Sync
+#### Step 4.2: Lodestar Startup & Checkpoint Sync
 The Lodestar container will start and attempt to sync using the `checkpointSyncUrl`.
 * **Action:** Use the Azure CLI to stream logs:
     ```bash
@@ -427,8 +425,8 @@ The Lodestar container will start and attempt to sync using the `checkpointSyncU
 
 ---
 
-## Phase 5: Final Validation & Connectivity
-### Step 5.1: The "Private Tunnel" Test
+### Phase 5: Final Validation & Connectivity
+#### Step 5.1: The "Private Tunnel" Test
 Now we verify that the RPC port (9596) is truly private but accessible to you.
 * **Action:** On your local laptop (with Tailscale running), run a CURL command against the **Tailscale IP**:
     ```bash
@@ -436,7 +434,7 @@ Now we verify that the RPC port (9596) is truly private but accessible to you.
     ```
 * **Verification:** You should receive a JSON response containing the Ethereum Genesis data.
 
-### Step 5.2: Public Port Scan (Security Audit)
+#### Step 5.2: Public Port Scan (Security Audit)
 * **Action:** Find the **Public IP** of your ACI in the Azure Portal. Use `nmap` or an online port scanner.
 * **Verification:**
     * **Port 9000 (TCP/UDP):** Should be **Open** (required for P2P).
@@ -444,7 +442,7 @@ Now we verify that the RPC port (9596) is truly private but accessible to you.
 
 ---
 
-## Engineering Observations & Tips
+### Engineering Observations & Tips
 * **Resource Throttling:** You allocated `0.5 CPU` to Lodestar. During the initial header sync, you might see 100% usage. If the container restarts frequently (OOM Killed), consider bumping memory to `1.5GB`.
 * **Storage Performance:** Since you are using a Standard LRS File Share, the IOPS are limited. For a Light Client, this is fine. However, if you see "Database Timeout" in the logs, it’s likely the SMB latency.
 * **Tailscale ACLs:** In your Tailscale dashboard, I recommend setting an ACL to only allow *your* specific laptop tag to talk to the node tag on port 9596.
