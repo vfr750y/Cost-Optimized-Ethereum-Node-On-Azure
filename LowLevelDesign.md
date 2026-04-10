@@ -238,10 +238,10 @@ Why this is safe: Only devices authenticated to your Tailscale account can "see"
 
 
 ## Phase 1: Bootstrapping & Identity
-Before Terraform can touch Azure, we need to build the "management plane."
+Build the Terraform management plane
 
 ### Step 1.1: Azure Service Principal (SPN) Creation
-You need an identity for GitHub Actions.
+Create an identity for GitHub Actions.
 * **Action:** Run the following CLI command to create an SPN with "Contributor" rights at the Subscription level.
     ```bash
     az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
