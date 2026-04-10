@@ -160,7 +160,9 @@ jobs:
 ```
 
 ### Azure container instance details
-One container runs Lodestar, and the other runs a Tailscale sidecar.Lodestar Container: Handles P2P traffic and syncs via a checkpoint URL.Tailscale Sidecar: Creates a private, encrypted "mesh" tunnel between your ACI and your home laptop. This allows you to access the RPC port over a private IP, keeping it completely hidden from the public internet.2. Networking ConfigurationYou will expose only the essential ports to the public internet.PortTypePurposeExposure9000TCP/UDPEthereum P2P (Discovery)Public (Everyone)9596TCPLodestar REST/RPCPrivate (Localhost/Tailscale only)By not exposing port 9596 to the public IP of the ACI, you eliminate the risk of unauthorized RPC calls or DDoS attacks on your node.3. Step-by-Step Deployment
+One container runs Lodestar, and the other runs a Tailscale sidecar.Lodestar Container: Handles P2P traffic and syncs via a checkpoint URL.Tailscale Sidecar: Creates a private, encrypted "mesh" tunnel between your ACI and your home laptop. This allows you to access the RPC port over a private IP, keeping it completely hidden from the public internet.2. Networking ConfigurationYou will expose only the essential ports to the public internet.PortTypePurposeExposure9000TCP/UDPEthereum P2P (Discovery)Public (Everyone)9596TCPLodestar REST/RPCPrivate (Localhost/Tailscale only)By not exposing port 9596 to the public IP of the ACI, you eliminate the risk of unauthorized RPC calls or DDoS attacks on your node.
+
+3. Step-by-Step Deployment
 
 Step A: Setup Persistence (Azure Files)Even a light node needs to save its "head" and sync state, or it will start from scratch every time the container restarts.Create a Standard LRS Storage Account (cheapest tier).Create a File Share (e.g., lodestar-data).
 
@@ -266,8 +268,8 @@ az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
 Verification: After running this, go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
 
 ### Step 1.2: Terraform Backend Setup
-We need a place to store the `.tfstate` so GitHub Actions doesn't lose track of your resources.
-* **Action:** Create your Terraform state Storage Account inside the same Resource Group (rg-lodestar-node).
+We need a place to store the `.tfstate` for GitHub Actions to keep track of resources.
+* **Action:** Create a Terraform state Storage Account inside the same Resource Group (rg-lodestar-node).
 In the Azure Cloud Shell run the following commands
 ```bash
 # 1. Generate a unique name for your storage account (must be globally unique)
@@ -293,13 +295,57 @@ az storage container create \
 # 4. Display the name so you can copy it to your Terraform 'backend' config
 echo "Your Terraform Storage Account Name is: $STORAGE_NAME"
 ```
+Verification step
+```bash
+az storage account show --name $STORAGE_NAME --resource-group rg-lodestar-node --query "provisioningState"
+```
 
 ---
 
 ## Phase 2: Repository & Secret Management
 ### Step 2.1: Secure Tailscale Authentication
-* **Action:** Go to your Tailscale Admin Console and generate an **Auth Key**. Ensure it is marked as **Reusable** and **Ephemeral** (since containers might restart).
-* **Verification:** Keep the key ready for the next step.
+
+1. Create your Tailscale Account (if not already created)
+Go to tailscale.com.
+
+Click "Get Started for Free" or "Log in".
+
+Sign in using a "Single Sign-On" (SSO) provider. Tailscale doesn't use passwords; it uses your existing identity from GitHub, Google, or Microsoft.
+
+Recommendation: Use the same GitHub account you are using for this project to keep your "DevOps" identity consistent.
+
+2. Access the Admin Console
+Once you are logged in, you will be taken to the Dashboard (this is the "Admin Console"). If you are on their homepage, there will be an "Admin Console" button in the top right corner.
+
+3. Generate the Auth Key (The Step-by-Step)
+Now that you're in the console:
+
+Click on the Settings tab in the top navigation bar.
+
+On the left-hand sidebar, click Keys.
+
+In the Auth keys section, click the Generate auth key... button.
+
+Configure the settings exactly like this:
+
+Description: Give it a name like azure-eth-node.
+
+Reusable: Check this box. Since containers in ACI might restart, you want the new container instance to be able to use the same key to re-join your network.
+
+Ephemeral: Check this box. This is a "cleanliness" feature. It tells Tailscale: "If this container goes offline and doesn't come back for a while, delete it from my dashboard automatically."
+
+Expiration: Set it to whatever you feel comfortable with (e.g., 90 days). You'll just need to update your GitHub Secret when it expires.
+
+Click Generate key.
+
+4. Secure the Key
+Copy the key immediately (it starts with tskey-auth-...).
+
+Warning: You will never see this key again once you close the pop-up.
+
+Action: Go straight to your GitHub Repository -> Settings -> Secrets and variables -> Actions and create a new secret named TAILSCALE_AUTH_KEY and paste the value there.
+
+
 
 ### Step 2.2: GitHub Secrets Injection
 * **Action:** Populate your GitHub Repository Secrets with:
