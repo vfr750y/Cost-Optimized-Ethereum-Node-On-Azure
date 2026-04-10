@@ -338,6 +338,63 @@ Warning: You will never see this key again once you close the pop-up.
     * `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
     * `TAILSCALE_KEY`
 * **Verification:** Create a dummy GitHub Action that prints "Secrets Loaded" (do not print the actual secrets!) to ensure the environment variables are mapping correctly.
+### 1. Create the Workflow File
+In your local repository (or directly in GitHub), create a new file at this exact path:
+`.github/workflows/verify-secrets.yml`
+
+### 2. Add the Test Code
+Paste the following configuration into that file. This workflow doesn't install anything; it just checks if the "containers" for your secrets are populated.
+
+```yaml
+name: Verify Secrets Mapping
+
+on: 
+  workflow_dispatch: # This allows you to run it manually for testing
+
+jobs:
+  test-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Azure Credentials
+        run: |
+          if [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+            echo "✅ AZURE_CREDENTIALS is set."
+          else
+            echo "❌ AZURE_CREDENTIALS is MISSING."
+            exit 1
+          fi
+
+      - name: Check Tailscale Key
+        run: |
+          if [ -n "${{ secrets.TAILSCALE_AUTH_KEY }}" ]; then
+            echo "✅ TAILSCALE_AUTH_KEY is set."
+          else
+            echo "❌ TAILSCALE_AUTH_KEY is MISSING."
+            exit 1
+          fi
+
+      - name: Verify Secret Format (Optional)
+        run: |
+          # This checks if the Azure secret looks like JSON without printing the contents
+          echo "${{ secrets.AZURE_CREDENTIALS }}" | grep -q "clientId" && echo "✅ Azure JSON format looks correct." || echo "⚠️ Azure Secret might not be in the correct JSON format."
+```
+
+
+
+### 3. Run the Verification
+1.  **Commit and Push** this file to your GitHub repository.
+2.  Go to the **Actions** tab at the top of your GitHub repo page.
+3.  On the left sidebar, click on **"Verify Secrets Mapping"**.
+4.  Click the **"Run workflow"** dropdown button on the right and hit the green button.
+
+### 4. Interpreting the Results
+* **Green Checkmarks:** Your environment variables are correctly mapped. You are safe to proceed to the Terraform deployment.
+* **Red "X":** GitHub cannot find the secret. This usually means there is a **typo** between the name you gave the secret in the "Settings" tab and the name you used in the YAML file (e.g., `TAILSCALE_KEY` vs `TAILSCALE_AUTH_KEY`).
+
+### Why this is "Best Practice"
+GitHub automatically masks secrets in logs (replacing them with `***`). However, if you accidentally echo a secret that isn't properly recognized as a secret, you could leak it to your logs. By using the `-n` (not empty) check in a shell script, we verify the **existence** of the data without ever risking the **exposure** of the data.
+
+Once this test passes, you have 100% confidence that your "Authentication Plumbing" is ready for the real deployment. Shall we move on to the Terraform `main.tf` logic next?
 
 ---
 
