@@ -327,11 +327,9 @@ Now that you're in the console:
 - Click Generate key.
 
 4. Secure the Key
-Copy the key immediately (it starts with tskey-auth-...).
-
+- Copy the key immediately (it starts with tskey-auth-...).
 Warning: You will never see this key again once you close the pop-up.
-
-Action: Go straight to your GitHub Repository -> Settings -> Secrets and variables -> Actions and create a new secret named TAILSCALE_AUTH_KEY and paste the value there.
+- Action: Go straight to your GitHub Repository -> Settings -> Secrets and variables -> Actions and create a new secret named TAILSCALE_AUTH_KEY and paste the value there.
 
 
 
