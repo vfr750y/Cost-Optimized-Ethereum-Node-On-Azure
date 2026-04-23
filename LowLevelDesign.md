@@ -24,7 +24,7 @@
 
 ### Terraform Configuration (main.tf)
 
-This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for your laptop. We use Azure Files to persist the node state and Tailscale's identity.
+This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for a remote connection. Azure Files is utilized to persist the node state and Tailscale's identity.
 
 ```Terraform
 # main.tf
