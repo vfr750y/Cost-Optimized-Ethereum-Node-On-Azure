@@ -22,7 +22,7 @@ There are several different types of Ethereum node:
 - Azure will be used as the platform for deployment.
 - A deployment method using Infrastructure as Code is preferred.
 
-### Types of Node
+### Investigation into different node types
 
 #### Full node (default) / Archive full node
 A full node's core software is in two parts, an execution client and a consensus client. They can be thought of as a team and the node can only properly function when both clients are working correctly. There are two versions of the full node, default and archive. The difference between them is the amount of chain data accessible. Archive nodes contain the entire chain from the genesis block (around 15 to 18 TB). The default behaviour for a full node is to prune the data to save space. A default node is around 1.5 to 2 TB.
