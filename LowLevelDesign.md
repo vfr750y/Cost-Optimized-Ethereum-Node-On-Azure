@@ -281,6 +281,8 @@ jobs:
 
 ## Sequence diagrams for protocol interactions
 
+### Sequence diagram for remote admin
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -305,6 +307,35 @@ sequenceDiagram
     TS_AZ->>TS_RA: 10. Sent over Public Internet (UDP)
     Note right of TS_RA: 11. Decrypt and decapsulate response
     TS_RA-->>RA: 12. Deliver response to application
+```
+
+### Sequence diagram for internet to Lodestar Client.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Peer as External Eth Peer (Internet)
+    participant NSG as Azure NSG (Port Filter)
+    participant LS as Lodestar Container (Azure ACI)
+    participant Disk as Azure File Share (Storage)
+
+    Note over Peer, LS: Scenario 1: Successful Handshake
+
+    Peer->>NSG: 1. Inbound P2P Connection Request (TCP/UDP :9000)
+    Note right of NSG: 2. Check Rules:<br/>Matches 'AllowP2P' Rule
+    NSG->>LS: 3. Forward Traffic to Container
+    activate LS
+    LS->>Peer: 4. P2P Handshake & Hello
+    Peer->>LS: 5. Request Light Client Headers
+    LS->>Disk: 6. Read Local Sync State
+    Disk-->>LS: 7. Return Header Data
+    LS-->>Peer: 8. Serve Block Headers
+    deactivate LS
+
+    Note over Peer, LS: Scenario 2: Blocked Management Access
+
+    Peer-xNSG: 9. Attempt Connection to REST API (TCP :9596)
+    Note right of NSG: 10. Check Rules:<br/>No Match (Implicit Deny)
+    Note over Peer, NSG: Traffic Dropped by Azure Firewall
 ```
 
 ## Detailed breakdown of costs
