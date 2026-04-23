@@ -37,8 +37,9 @@ graph TD
     subgraph Azure_VNet [Azure Virtual Network: 10.0.0.0/16]
         direction TB
         
+        %% --- NSG ADDED HERE ---
         subgraph NSG [Network Security Group]
-            R1[Allow :9000 Inbound]
+            R1[Allow :9000 Inbound - TCP/UDP]
             R2[Deny All Other Inbound]
         end
 
@@ -69,14 +70,16 @@ graph TD
     Tailscale --- SA
     
     %% Networking Logic
+    %% All public internet traffic now flows *through* the NSG rules
     Internet((Internet)) -- "P2P Discovery" --> R1
     R1 --> L1
     
+    %% The management tunnel is isolated by Tailscale
     T2 -. "Encrypted Management Tunnel" .-> Remote_User[Remote Admin/DApp]
     Remote_User -- "Private Access" --> L2
 
     %% Styling
-    style NSG fill:#fff2cc,stroke:#d6b656,stroke-dasharray: 5 5
+    style NSG fill:#fff2cc,stroke:#d6b656,stroke-width:2px,stroke-dasharray: 5 5
     style ACI_Group fill:#f9f,stroke:#333
     style SA fill:#bbf,stroke:#333
     style Subnet fill:#f5f5f5,stroke:#666
