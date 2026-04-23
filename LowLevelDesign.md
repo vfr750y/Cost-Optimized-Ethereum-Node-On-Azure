@@ -21,6 +21,11 @@
 
 ```
 
+## Description of solution
+This architecture implements a highly efficient, cloud-native Ethereum light node by leveraging a sidecar container pattern within Azure Container Instances (ACI) to balance public accessibility with private management. The primary Lodestar container functions as the Ethereum interface, utilizing a public IP for P2P network discovery on port 9000 while remaining synchronized via a persistent Azure File Share that prevents data loss during container recycling. 
+
+Orchestrated alongside it, a Tailscale sidecar container establishes a secure, encrypted WireGuard tunnel, allowing remote administrators to securely access the node’s REST API on port 9596 via a private mesh network without exposing sensitive endpoints to the open internet. The entire lifecycle—from infrastructure provisioning via Terraform to automated deployments via GitHub Actions—is managed as code, ensuring a reproducible, low-overhead environment that maximizes security through network isolation and minimizes operational costs through right-sized serverless compute.
+
 ## Low level diagram of solution
 
 ```mermaid
