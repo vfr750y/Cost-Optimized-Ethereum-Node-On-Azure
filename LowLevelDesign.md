@@ -79,38 +79,103 @@ graph TD
 This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for a remote connection. Azure Files is utilized to persist the node state and Tailscale's identity.
 
 ```Terraform
-# main.tf
+# main.tf (Updated with VNet and NSG)
 
 resource "azurerm_resource_group" "eth_node" {
   name     = "rg-lodestar-node"
   location = var.location
 }
 
-# Storage for Node Sync State & Tailscale Auth
+# 1. Network: Virtual Network & Subnet
+resource "azurerm_virtual_network" "vnet" {
+  name                = "vnet-lodestar"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.eth_node.location
+  resource_group_name = azurerm_resource_group.eth_node.name
+}
+
+resource "azurerm_subnet" "aci_subnet" {
+  name                 = "snet-aci"
+  resource_group_name  = azurerm_resource_group.eth_node.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.1.0/24"]
+
+  # Required for ACI injection into a VNet
+  delegation {
+    name = "aci-delegation"
+    service_delegation {
+      name    = "Microsoft.ContainerInstance/containerGroups"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
+}
+
+# 2. Security: Network Security Group (NSG)
+resource "azurerm_network_security_group" "aci_nsg" {
+  name                = "nsg-lodestar-aci"
+  location            = azurerm_resource_group.eth_node.location
+  resource_group_name = azurerm_resource_group.eth_node.name
+
+  # Allow Ethereum P2P (TCP)
+  security_rule {
+    name                       = "AllowP2P_TCP"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "9000"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # Allow Ethereum P2P (UDP)
+  security_rule {
+    name                       = "AllowP2P_UDP"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Udp"
+    source_port_range          = "*"
+    destination_port_range     = "9000"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # Note: Port 9596 is NOT opened here. Tailscale handles it internally.
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
+  subnet_id                 = azurerm_subnet.aci_subnet.id
+  network_security_group_id = azurerm_network_security_group.aci_nsg.id
+}
+
+# 3. Storage (Unchanged logic, added for completeness)
 resource "azurerm_storage_account" "storage" {
   name                     = "stlodestardata${random_string.suffix.result}"
   resource_group_name      = azurerm_resource_group.eth_node.name
   location                 = azurerm_resource_group.eth_node.location
   account_tier             = "Standard"
-  account_replication_type = "LRS" # Lowest cost
+  account_replication_type = "LRS"
 }
 
 resource "azurerm_storage_share" "lodestar_share" {
   name                 = "lodestar-data"
   storage_account_name = azurerm_storage_account.storage.name
-  quota                = 5 # 5GB is plenty for a light node
+  quota                = 5
 }
 
-# The Container Group
+# 4. Container Group (Updated for VNet)
 resource "azurerm_container_group" "node_group" {
   name                = "lodestar-light-node"
   location            = azurerm_resource_group.eth_node.location
   resource_group_name = azurerm_resource_group.eth_node.name
   os_type             = "Linux"
-  ip_address_type     = "Public" # Required for P2P Discovery
-  dns_name_label      = "lodestar-node-${random_string.suffix.result}"
+  
+  # Set to Private for VNet injection
+  ip_address_type     = "Private"
+  subnet_ids          = [azurerm_subnet.aci_subnet.id]
 
-  # Container 1: Lodestar
   container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
@@ -131,11 +196,7 @@ resource "azurerm_container_group" "node_group" {
       port     = 9000
       protocol = "TCP"
     }
-    ports {
-      port     = 9000
-      protocol = "UDP"
-    }
-
+    
     volume {
       name                 = "lodestar-storage"
       mount_path           = "/data"
@@ -145,7 +206,6 @@ resource "azurerm_container_group" "node_group" {
     }
   }
 
-  # Container 2: Tailscale Sidecar
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
@@ -175,11 +235,12 @@ resource "random_string" "suffix" {
 ```
 
 ### GitHub Actions Workflow (deploy.yml)
-To automate this, you will store your Azure credentials and Tailscale key in GitHub Secrets.
+To automate the deployment of the solution, Azure credentials and Tailscale key are stored in GitHub Secrets.
 
-Azure Service Principal: Create one using az ad sp create-for-rbac and save the JSON as AZURE_CREDENTIALS.
+Azure Service Principal: Created using az ad sp create-for-rbac and save the JSON as AZURE_CREDENTIALS.
 
-Tailscale Key: Create an Auth Key (reusable recommended) in your Tailscale dashboard and save as TAILSCALE_KEY.
+Tailscale Key: Created with an Auth Key (reusable recommended) in the Tailscale dashboard and saved as TAILSCALE_KEY.
+
 ```yaml
 YAML
 name: Deploy Lodestar Node
