@@ -21,6 +21,53 @@
 
 ```
 
+## Low level diagram of solution
+
+```mermaid
+graph TD
+    subgraph GitHub_Actions [GitHub Actions CI/CD]
+        A[Push to Main] --> B[Terraform Plan/Apply]
+    end
+
+    subgraph Azure_Cloud [Azure Resource Group: rg-lodestar-node]
+        direction TB
+        
+        subgraph Storage [Azure Storage Account]
+            SA[(Azure File Share: lodestar-data)]
+        end
+
+        subgraph ACI_Group [Azure Container Group: lodestar-light-node]
+            direction LR
+            
+            subgraph Lodestar_Container [Container: Lodestar]
+                L1[Light Client Process]
+                L2[REST API :9596]
+                L3[P2P Discovery :9000]
+            end
+
+            subgraph Tailscale_Container [Container: Tailscale Sidecar]
+                T1[Tailscale Daemon]
+                T2[Secure WireGuard Tunnel]
+            end
+        end
+    end
+
+    %% Connections
+    B -- Deploys/Updates --> ACI_Group
+    L1 -- Persists State --> SA
+    T1 -- Persists Identity --> SA
+    
+    %% Networking
+    Internet((Internet)) <--> L3
+    T2 <--- Encrypted VPN ---> Remote_User[Remote Admin/DApp]
+    Remote_User -- Access API --> L2
+    
+    %% Styling
+    style ACI_Group fill:#f9f,stroke:#333,stroke-width:2px
+    style SA fill:#bbf,stroke:#333
+    style GitHub_Actions fill:#eee,stroke:#333
+    ```
+
 
 ### Terraform Configuration (main.tf)
 
