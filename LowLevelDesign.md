@@ -387,7 +387,9 @@ To harden this setup, the following "Defense in Depth" measures are recommended:
 Build the Terraform management plane
 
 #### Step 1.0: Create the Target Resource Group
-Since the SPN will be restricted to this group, it needs to exist beforehand. Run this in your Azure Cloud Shell:
+Since the SPN will be restricted to this group, it needs to exist beforehand. 
+
+Azure Cloud Shell commands (bash):
 
 ```Bash
 # Set your variables
@@ -399,8 +401,7 @@ az group create --name $RG_NAME --location $LOCATION
 ```
 
 #### Step 1.1: Azure Service Principal (SPN) Creation
-Create an identity for GitHub Actions.
-Now, create the SPN and restrict its "Contributor" role strictly to that group. 
+Create the SPN and restrict its "Contributor" role strictly to that group. 
 NOTE: replace {subscription-id}.
 
 ```Bash
@@ -409,7 +410,7 @@ az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
   --sdk-auth
 ```
 
-Verification: After running this, go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
+Verification: Go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
 
 #### Step 1.2: Terraform Backend Setup
 We need a place to store the `.tfstate` for GitHub Actions to keep track of resources.
