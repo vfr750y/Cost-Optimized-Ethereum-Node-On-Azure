@@ -127,7 +127,7 @@ To meet the requirements of this project we only need to be running simple node 
 
 ## Risks
 ### State Access
-Every time you want to interact with a contract (e.g., checking a Uniswap price or your wallet balance), the light node must perform a Merkle Proof request to a peer. Instead of a local disk read (micro-seconds), you’re doing a network round-trip (milliseconds).
+For each interaction with a contract (e.g., checking a Uniswap price or your wallet balance), the light node must perform a Merkle Proof request to a peer. Instead of a local disk read (micro-seconds), the network round-trip takes longer (milliseconds).
 
 Full nodes treat light client support as a luxury service. When a node's hardware is under pressure, it will "shed" light clients first to prioritize its own survival. The three main triggers for this are:
 
