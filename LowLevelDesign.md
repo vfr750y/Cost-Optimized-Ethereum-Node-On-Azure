@@ -34,55 +34,46 @@ graph TD
         A[Push to Main] --> B[Terraform Plan/Apply]
     end
 
-    subgraph Azure_VNet [Azure Virtual Network: 10.0.0.0/16]
+    subgraph Azure_Cloud [Azure Subscription]
         direction TB
         
-        %% --- NSG ADDED HERE ---
-        subgraph NSG [Network Security Group]
-            R1[Allow :9000 Inbound - TCP/UDP]
-            R2[Deny All Other Inbound]
-        end
-
-        subgraph Subnet [Subnet: 10.0.1.0/24]
-            direction LR
+        subgraph VNet [Virtual Network: 10.0.0.0/16]
+            direction TB
             
-            subgraph ACI_Group [Container Group: Private IP]
-                subgraph Lodestar [Lodestar Container]
-                    L1[Light Client]
-                    L2[REST API :9596]
-                end
-
-                subgraph Tailscale [Tailscale Sidecar]
-                    T1[TS Daemon]
-                    T2[WireGuard Tunnel]
+            %% NSG as a distinct gatekeeper
+            NSG{Network Security Group}
+            
+            subgraph Subnet [ACI Subnet: 10.0.1.0/24]
+                direction LR
+                subgraph ACI [Container Group]
+                    L[Lodestar Container]
+                    T[Tailscale Sidecar]
                 end
             end
         end
 
-        subgraph Storage [Azure Storage Account]
-            SA[(Azure File Share)]
-        end
+        SA[(Azure Storage Account)]
     end
 
-    %% Connections
-    B -- Provisions --> Azure_VNet
-    Lodestar --- SA
-    Tailscale --- SA
+    %% Deployment Flow
+    B -- "Configures" --> VNet
     
-    %% Networking Logic
-    %% All public internet traffic now flows *through* the NSG rules
-    Internet((Internet)) -- "P2P Discovery" --> R1
-    R1 --> L1
+    %% Internet Traffic Flow
+    Internet((Internet)) -- "Port 9000" --> NSG
+    NSG -- "Allow" --> L
     
-    %% The management tunnel is isolated by Tailscale
-    T2 -. "Encrypted Management Tunnel" .-> Remote_User[Remote Admin/DApp]
-    Remote_User -- "Private Access" --> L2
+    %% Storage Persistence
+    L --- SA
+    T --- SA
 
-    %% Styling
-    style NSG fill:#fff2cc,stroke:#d6b656,stroke-width:2px,stroke-dasharray: 5 5
-    style ACI_Group fill:#f9f,stroke:#333
-    style SA fill:#bbf,stroke:#333
-    style Subnet fill:#f5f5f5,stroke:#666
+    %% Secure Management Flow
+    Remote_User[Remote Admin] -. "WireGuard Tunnel" .-> T
+    T -- "Localhost API" --> L
+
+    %% Styling to make NSG pop
+    style NSG fill:#fff2cc,stroke:#d6b656,stroke-width:4px
+    style ACI fill:#f9f,stroke:#333
+    style VNet fill:#f5f5f5,stroke:#666
   
   ```
 
