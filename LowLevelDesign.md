@@ -34,42 +34,52 @@ graph TD
         A[Push to Main] --> B[Terraform Plan/Apply]
     end
 
-    subgraph Azure_Cloud [Azure Resource Group: rg-lodestar-node]
+    subgraph Azure_VNet [Azure Virtual Network: 10.0.0.0/16]
         direction TB
         
-        subgraph Storage [Azure Storage Account]
-            SA[(Azure File Share: lodestar-data)]
+        subgraph NSG [Network Security Group]
+            R1[Allow :9000 Inbound]
+            R2[Deny All Other Inbound]
         end
 
-        subgraph ACI_Group [Azure Container Group: lodestar-light-node]
+        subgraph Subnet [Subnet: 10.0.1.0/24]
             direction LR
             
-            subgraph Lodestar_Container [Container: Lodestar]
-                L1[Light Client Process]
-                L2[REST API :9596]
-                L3[P2P Discovery :9000]
-            end
+            subgraph ACI_Group [Container Group: Private IP]
+                subgraph Lodestar [Lodestar Container]
+                    L1[Light Client]
+                    L2[REST API :9596]
+                end
 
-            subgraph Tailscale_Container [Container: Tailscale Sidecar]
-                T1[Tailscale Daemon]
-                T2[Secure WireGuard Tunnel]
+                subgraph Tailscale [Tailscale Sidecar]
+                    T1[TS Daemon]
+                    T2[WireGuard Tunnel]
+                end
             end
+        end
+
+        subgraph Storage [Azure Storage Account]
+            SA[(Azure File Share)]
         end
     end
 
     %% Connections
-    B -- Deploys --> ACI_Group
-    L1 --- SA
-    T1 --- SA
+    B -- Provisions --> Azure_VNet
+    Lodestar --- SA
+    Tailscale --- SA
     
-    %% Networking Fix
-    Internet((Internet)) <==> L3
-    T2 -. "Encrypted VPN" .-> Remote_User[Remote Admin/DApp]
-    Remote_User -- "Access API" --> L2
+    %% Networking Logic
+    Internet((Internet)) -- "P2P Discovery" --> R1
+    R1 --> L1
+    
+    T2 -. "Encrypted Management Tunnel" .-> Remote_User[Remote Admin/DApp]
+    Remote_User -- "Private Access" --> L2
 
     %% Styling
-    style ACI_Group fill:#f9f,stroke:#333,stroke-width:2px
+    style NSG fill:#fff2cc,stroke:#d6b656,stroke-dasharray: 5 5
+    style ACI_Group fill:#f9f,stroke:#333
     style SA fill:#bbf,stroke:#333
+    style Subnet fill:#f5f5f5,stroke:#666
   
   ```
 
