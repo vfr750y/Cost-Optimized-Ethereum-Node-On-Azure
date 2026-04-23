@@ -40,11 +40,12 @@ graph TD
         subgraph VNet [Virtual Network: 10.0.0.0/16]
             direction TB
             
-            %% NSG as a distinct gatekeeper
-            NSG{Network Security Group}
+            %% NSG as a subtle blue rectangle
+            NSG[Network Security Group]
             
             subgraph Subnet [ACI Subnet: 10.0.1.0/24]
                 direction LR
+                %% ACI Group in pastel green
                 subgraph ACI [Container Group]
                     L[Lodestar Container]
                     T[Tailscale Sidecar]
@@ -70,9 +71,9 @@ graph TD
     Remote_User[Remote Admin] -. "WireGuard Tunnel" .-> T
     T -- "Localhost API" --> L
 
-    %% Styling to make NSG pop
-    style NSG fill:#fff2cc,stroke:#d6b656,stroke-width:4px
-    style ACI fill:#f9f,stroke:#333
+    %% Styling Updates
+    style NSG fill:#e3f2fd,stroke:#90caf9,stroke-width:2px %% Subtle Blue
+    style ACI fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px %% Pastel Green
     style VNet fill:#f5f5f5,stroke:#666
   
   ```
