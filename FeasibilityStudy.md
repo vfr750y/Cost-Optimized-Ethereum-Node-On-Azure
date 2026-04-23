@@ -73,7 +73,7 @@ Data egress - Around 1 to 1.5 TB per month based on 50 to 100 peers.
 
 #### Light node (Lodestar) on a VM.
 
-Storage - RAM only with a Helios light node.
+Storage - RAM only with a Lodestar light node.
 Memory - Max 1GB
 IOPS 50 - 300
 Data egress - <10GB per month

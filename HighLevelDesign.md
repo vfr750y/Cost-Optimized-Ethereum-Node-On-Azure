@@ -73,7 +73,7 @@ The user and the wallet creates a signed request which is sent to the light node
 - Azure storage account : Keeps the Terraform state file.
 - Azure container instance (Linux)
 - Azure file share : Persistent storage for the Azure container.
-- Helios light client (running in the Azure Container Instance)
+- Lodestar light client (running in the Azure Container Instance)
 
 ## System Architecture Diagram (Physical/Cloud)
 
@@ -101,7 +101,7 @@ graph TB
 
         subgraph Runtime ["Compute Group"]
             subgraph ACI_Instance ["Azure Container Instance (Linux)"]
-                Helios["Helios Light Client"]
+                Lodestar["Lodestar Light Client"]
             end
         end
     end
@@ -118,8 +118,8 @@ graph TB
     TF -.-> State
 
     %% Execution & Persistence
-    Helios -- "Mounts" --> FS
-    User ==> Helios
+    Lodestar -- "Mounts" --> FS
+    User ==> Lodestar
 ```
 
 
@@ -130,7 +130,7 @@ sequenceDiagram
     actor Dev as Developer
     participant GH as GitHub Actions
     participant TF as Terraform Cloud
-    participant Azure as Azure (ACI/Helios)
+    participant Azure as Azure (ACI/Lodestar)
     participant FS as Azure File Share
     participant BC as Ethereum P2P
 
@@ -139,7 +139,7 @@ sequenceDiagram
     GH->>GH: Authenticate via GitHub Secrets
     GH->>TF: Trigger 'terraform apply'
     TF->>Azure: Auth via Entra ID (Service Principal)
-    Azure->>Azure: Update ACI with Helios Image
+    Azure->>Azure: Update ACI with Lodestar Image
     Azure->>FS: Mount Persistent Storage
 
     Note over Azure, BC: Phase 2: Runtime
@@ -162,7 +162,7 @@ sequenceDiagram
 
 ### Explanation of sequence diagram
 Operational Process Flow
-Phase 1: Deployment – The Developer uses an automated "Infrastructure as Code" pipeline. When changes are pushed to GitHub, Terraform Cloud authenticates with Azure to deploy or update the Light Node (Helios) within a container. This phase ensures the environment is consistent and uses persistent storage to keep the node's history.
+Phase 1: Deployment – The Developer uses an automated "Infrastructure as Code" pipeline. When changes are pushed to GitHub, Terraform Cloud authenticates with Azure to deploy or update the Light Node (Lodestar) within a container. This phase ensures the environment is consistent and uses persistent storage to keep the node's history.
 
 Phase 2: Runtime – Once the container is live, the Light Node begins its background work. It loads any existing data from the file share and connects to the Ethereum P2P Network to sync the latest block headers. This creates a trusted, up-to-date window into the blockchain without needing to download the entire database.
 
@@ -174,17 +174,17 @@ Phase 4: Network Propagation – After the Light Node confirms the transaction i
 Here are the primary assumptions for this architecture:
 
 
-**Public Reachability:** We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Helios RPC endpoint.
+**Public Reachability:** We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Lodestar RPC endpoint.
 
 **Provider Support:** We assume MetaMask (or the user) is configured to use a Custom RPC URL pointing to your ACI instance rather than a standard provider like Infura.
 
 **Role Based Access Control:** We assume the Azure Service Principal has been granted the Contributor or a custom Network/Contributor role at the Resource Group level, and that these credentials are securely rotated within GitHub Secrets.
 
-**SMB Compatibility:** We assume the Helios binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
+**SMB Compatibility:** We assume the Lodestar binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
 
 **Clock Sync:** Light clients are sensitive to time. We assume the underlying Azure host maintains an accurate system clock (via NTP) for block header validation.
 
-**Network configuration:** We assume Azure’s Network Security Group (NSG) can allow outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Helios can find peers.
+**Network configuration:** We assume Azure’s Network Security Group (NSG) can allow outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Lodestar can find peers.
 
 **Checkpoint:** The developer can provide a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Helios to sync securely and quickly. Also that the checkpoint can be updated, saved and can be used to resync the light node after a shutdown of any length.
 
@@ -193,7 +193,7 @@ Here are the primary assumptions for this architecture:
 | Category       | Constraint       | Requirement / Value               | Reason                                                                 |
 |:---------------|:-----------------|:----------------------------------|:----------------------------------|
 | **Compute** | Memory (RAM)     | Min. 2GB                          | Handles P2P networking overhead and cryptographic signature verification. |
-| **Compute** | CPU              | 1 vCPU (Linux)                    | Helios is efficient; a single core is sufficient for light client header syncing. |
+| **Compute** | CPU              | 1 vCPU (Linux)                    | Lodestar is efficient; a single core is sufficient for light client header syncing. |
 | **Storage** | Persistence      | Azure File Share (SMB)            | Ensures the client doesn't re-sync the entire header chain on container restart. |
 | **Storage** | Capacity         | 5GB - 10GB                        | Plenty of overhead for the header database and local logs.             |
 | **Networking** | Inbound Port     | 8545 (TCP)                        | Default RPC port for MetaMask/User communication.                      |
