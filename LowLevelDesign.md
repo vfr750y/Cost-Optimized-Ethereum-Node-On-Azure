@@ -280,6 +280,33 @@ jobs:
 ```
 
 ## Sequence diagrams for protocol interactions
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant RA as Remote Admin Device
+    participant TS_RA as Tailscale Client (Remote)
+    participant TS_AZ as Tailscale Sidecar (Azure)
+    participant LS as Lodestar Container (Azure)
+
+    Note over RA, LS: Prerequisite: Both Tailscale clients are authenticated to the same Tailnet.
+
+    Note left of RA: 1. Admin issues command<br/>(e.g., to curl lodestar-node:9596)
+    RA->>TS_RA: 2. Traffic intercepted (tun interface)
+    Note right of TS_RA: 3. Encapsulate and encrypt<br/>original packet (WireGuard)
+    TS_RA->>TS_AZ: 4. Sent over Public Internet (UDP)
+    Note left of TS_AZ: 5. Decrypt and decapsulate original packet
+    TS_AZ->>LS: 6. Forward original request to localhost:9596
+    activate LS
+    Note right of LS: 7. Process REST API command
+    LS-->>TS_AZ: 8. Return JSON response
+    deactivate LS
+    Note left of TS_AZ: 9. Encapsulate and encrypt response
+    TS_AZ->>TS_RA: 10. Sent over Public Internet (UDP)
+    Note right of TS_RA: 11. Decrypt and decapsulate response
+    TS_RA-->>RA: 12. Deliver response to application
+```
+
 ## Detailed breakdown of costs
 ## Detailed description of security risks and mitigations
 
