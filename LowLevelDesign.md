@@ -53,19 +53,18 @@ graph TD
     end
 
     %% Connections
-    B -- Deploys/Updates --> ACI_Group
-    L1 -- Persists State --> SA
-    T1 -- Persists Identity --> SA
+    B -- Deploys --> ACI_Group
+    L1 --- SA
+    T1 --- SA
     
-    %% Networking
-    Internet((Internet)) <--> L3
-    T2 <--- Encrypted VPN ---> Remote_User[Remote Admin/DApp]
-    Remote_User -- Access API --> L2
-    
+    %% Networking Fix
+    Internet((Internet)) <==> L3
+    T2 -. "Encrypted VPN" .-> Remote_User[Remote Admin/DApp]
+    Remote_User -- "Access API" --> L2
+
     %% Styling
     style ACI_Group fill:#f9f,stroke:#333,stroke-width:2px
     style SA fill:#bbf,stroke:#333
-    style GitHub_Actions fill:#eee,stroke:#333
     ```
 
 
