@@ -65,7 +65,8 @@ graph TD
     %% Styling
     style ACI_Group fill:#f9f,stroke:#333,stroke-width:2px
     style SA fill:#bbf,stroke:#333
-    ```
+  
+  ```
 
 
 ### Terraform Configuration (main.tf)
