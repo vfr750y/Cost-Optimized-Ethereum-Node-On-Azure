@@ -341,6 +341,45 @@ sequenceDiagram
 ## Detailed breakdown of costs
 ## Detailed description of security risks and mitigations
 
+While the Tailscale sidecar significantly hardens the management plane, the nature of Ethereum P2P networking necessitates some exposure.
+The attack surface for this solution is divided into three distinct vectors:
+* **Public P2P Interface (Port 9000):** This is your largest exposure. To participate in the Ethereum network, the node must be reachable by untrusted peers globally.
+* **The Supply Chain:** This includes the Docker images (`chainsafe/lodestar`, `tailscale/tailscale`), the Terraform providers, and the GitHub Actions runner.
+* **Azure Infrastructure Plane:** The Azure Portal/CLI access and the Storage Account keys. If the storage key is leaked, the Tailscale identity can be cloned, granting an attacker access to your private mesh network.
+
+---
+
+### Potential Attack Scenarios
+
+#### A. Eclipse Attacks (P2P Level)
+An attacker could attempt to surround your light node with malicious peers. By controlling all the nodes your light client connects to, they could feed you a dishonest version of the blockchain (e.g., hiding transactions or showing a stale state).
+
+#### B. Resource Exhaustion / DoS
+Because Port 9000 is open to the public, an attacker could flood the node with malformed discovery packets or high-volume connection requests. Given the low resource allocation ($0.5$ CPU, $1.0$ GB RAM), the ACI instance is highly susceptible to CPU pinning or OOM (Out of Memory) crashes.
+
+#### C. Sidecar Escape or Data Exfiltration
+If a vulnerability is found in the Lodestar binary, an attacker could theoretically compromise that container. From there, they might attempt to "hop" to the Tailscale container (since they share a network namespace) to intercept private traffic or access the shared Azure File Share to steal the Tailscale state keys.
+
+---
+
+### Risk Mitigation Strategy
+
+To harden this setup, the following "Defense in Depth" measures are recommended:
+
+### Infrastructure Hardening
+* **Storage Account Firewalls:** Restrict the Storage Account so it only accepts traffic from the ACI's specific subnet or identity. Do not leave it open to "All Networks."
+* **Use Managed Identities:** Instead of using the Storage Account Access Key in your Terraform (which is a "root" password for your data), configure ACI to use a **User-Assigned Managed Identity** to mount the file share.
+* **Resource Quotas:** Consider bumping the memory to $2.0$ GB. Light clients are efficient, but during high network turbulence, memory spikes are common; a crash during a sync can lead to state corruption.
+
+### Network & Sidecar Security
+* **Tailscale ACLs:** Within the Tailscale admin console, implement **Tags** and **ACLs**. Ensure that the node can only *receive* traffic on port 9596 and cannot initiate connections to other sensitive devices on your Tailnet.
+* **P2P Peer Limits:** Explicitly set `--maxPeers` in your Lodestar command. For a light node, $20–30$ peers is usually sufficient and prevents the container from being overwhelmed.
+
+### Supply Chain Security
+* **Image Pinning:** Instead of using `:latest`, pin your Docker images to specific hashes (SHA256). This prevents an "upstream" compromise of the image repository from automatically deploying malicious code to your Azure environment.
+* **OIDC for GitHub Actions:** Stop using long-lived Azure Service Principal secrets. Switch to **OpenID Connect (OIDC)** to allow GitHub to authenticate to Azure via a short-lived, passwordless token.
+
+
 ## Detailed implementation steps
 
 
