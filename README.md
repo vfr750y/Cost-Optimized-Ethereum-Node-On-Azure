@@ -15,7 +15,7 @@ This project is a proof of concept. The aim is to deploy an Ethererum node on Az
 ### High level considerations. 
 The budget for this project is restricted, so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them. If it's not feasible to do a full node then there are a couple of other node types to consider that might be more feasible. A Sepolia test node is also going to be cheaper than a full node.
 
-I need to make sure that the system is secure. I'm thinking of using a basic hub and spoke network architecture. I want to take a look at the network ports that are required and also to get an idea of the costs for data ingress and egress. 
+I need to make sure that the system is secure. I'm thinking of using a basic VNET with Network Security Group (NSG) network architecture. I want to take a look at the network ports that are required and also to get an idea of the costs for data ingress and egress. 
 
 I'll compare standard VM vs Containerisation or Kubernetes.
 
