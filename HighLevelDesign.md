@@ -186,7 +186,7 @@ Here are the primary assumptions for this architecture:
 
 **Network configuration:** We assume Azure’s Network Security Group (NSG) can allow outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Lodestar can find peers.
 
-**Checkpoint:** The developer can provide a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Helios to sync securely and quickly. Also that the checkpoint can be updated, saved and can be used to resync the light node after a shutdown of any length.
+**Checkpoint:** The developer can provide a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Lodestar to sync securely and quickly. Also that the checkpoint can be updated, saved and can be used to resync the light node after a shutdown of any length.
 
 ## Technical constraints
 
