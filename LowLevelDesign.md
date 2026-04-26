@@ -173,8 +173,8 @@ resource "azurerm_container_group" "node_group" {
   container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
-    cpu    = "0.5"
-    memory = "1.0"
+    cpu    = "1"
+    memory = "2.0"
 
     commands = [
       "node", "light-client",
@@ -203,8 +203,8 @@ resource "azurerm_container_group" "node_group" {
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
-    cpu    = "0.1"
-    memory = "0.2"
+    cpu    = "0.5"
+    memory = "1"
 
     environment_variables = {
       TS_AUTHKEY   = var.tailscale_key
