@@ -174,7 +174,7 @@ Phase 4: Network Propagation – After the Light Node confirms the transaction i
 Here are the primary assumptions for this architecture:
 
 
-**Public Reachability:** We assume the Azure Container Instance (ACI) will be assigned a Public IP address or a Fully Qualified Domain Name (FQDN) so that MetaMask can reach the Lodestar RPC endpoint.
+**Metamask** MetaMask must connect via the Tailscale tunnel (private IP/DNS), as the scenario forbids public RPC exposure.
 
 **Provider Support:** We assume MetaMask (or the user) is configured to use a Custom RPC URL pointing to your ACI instance rather than a standard provider like Infura.
 
