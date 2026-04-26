@@ -178,7 +178,7 @@ resource "azurerm_container_group" "node_group" {
 
     commands = [
       "node", "light-client",
-      "--network", "mainnet",
+      "--network", "sepolia",
       "--checkpointSyncUrl", "https://beaconstate.ethpandaops.io/",
       "--rest",
       "--rest.address", "0.0.0.0",
