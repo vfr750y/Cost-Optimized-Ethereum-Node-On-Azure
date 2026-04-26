@@ -92,16 +92,17 @@ Data egress - <10GB per month
 An Azure container instance is charged by the second.
 A light node requires virtually zero IOPS once the initial 20-second sync is complete. It fits perfectly within ACI’s 50GB local disk limit.
 So we can't realistically use ACI for a full node, but for a lightnode it seems a good choice.
+A second container running Tailscale would be required for a private admin connection.
 
-Here is the cost breakdown for an Azure container instance:
+Here is the cost breakdown for 2 Azure container instances and one persistent file share:
 
 | Item name    | Item value      | Cost (USD p/m) |Description                                             |
 |:-------------|:----------------|:---------------|:-------------------------------------------------------|
-| CPU          | 1vCPU           | 1              | est 24 hours per month                                 |
-| Memory       | 1GB             | 0.1            | est 24 hours per month                                 |
+| CPU          | 2vCPU           | 2              | est 24 hours per month                                 |
+| Memory       | 2GB             | 0.2            | est 24 hours per month                                 |
 | File share   | 32GB MIN        | 5              | Min 3000 iops   100 MiB/s                              |
 | Data egress  | 10GB            | 0              | First 100GB is free  per subscription                  |
-| **Total**    |                 | **6.1**        |                                                        |
+| **Total**    |                 | **7.2**        |                                                        |
 
 ### Summary of cost analysis
 
@@ -110,7 +111,7 @@ Here is the cost breakdown for an Azure container instance:
 | Mainnet Full Node | 502.00 | 2TB+ SSD & High Egress |
 | Sepolia Testnet | 333.00 | 1TB Storage |
 | Light Node (VM) | 9.64 | Minimal 30GB Storage |
-| Light Node (ACI)| 6.10 | Persistent File Share|
+| Light Node (ACI)| 7.20 | Persistent File Share|
 
 ## Definition of scope
 To meet the requirements of this project we only need to be running simple node such as a light node on a test network. In this case, a standard Ethereum light node on an Azure Container Instance seems to be the best fit. Stateless clients rely on proofs being provided and don't have a heartbeat interaction with other nodes. Whilst this means they can run with virtually no resources, they don't provide the best use case for a proof of concept. It is more likely that at this time, light nodes such as Lodestar will be widely used and supported. The technical aspects of running a light node provide ample opportunity for showcasing a whole solution including version control and infrastructure as code, Azure container instance, virtual network configuration, security and monitoring. In addition a secondary container would be required to run a Tailscale sidecar for administrative connections to the Lodestar client.
