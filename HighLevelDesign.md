@@ -209,7 +209,7 @@ There are 2 environment types to choose from.
 
 To secure a **Lodestar Light Client** in **Azure Container Instance (ACI)** without using the premium Azure Firewall, you must leverage **Virtual Network (VNet) Integration** and **Network Security Groups (NSGs)**.
 
-Since ACI instances in a VNet do not receive a public IP address by default, you will need an **Azure Load Balancer** to handle inbound traffic from your specific IP and a **NAT Gateway** to provide a stable outbound identity for the Ethereum network.
+Tailscale will be used to secure a private admin and RPC connections and the NSG will be used to secure port 9000.
 
 https://learn.microsoft.com/en-us/azure/container-apps/environment 
 
