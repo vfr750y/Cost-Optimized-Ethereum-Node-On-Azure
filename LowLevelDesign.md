@@ -179,7 +179,7 @@ resource "azurerm_container_group" "node_group" {
     commands = [
       "node", "light-client",
       "--network", "sepolia",
-      "--checkpointSyncUrl", "https://beaconstate.ethpandaops.io/",
+      "--checkpointSyncUrl", "https://checkpoint-sync.sepolia.ethpandaops.io/",
       "--rest",
       "--rest.address", "0.0.0.0",
       "--rest.port", "9596",
