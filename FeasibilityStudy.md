@@ -113,9 +113,9 @@ Here is the cost breakdown for an Azure container instance:
 | Light Node (ACI)| 6.10 | Persistent File Share|
 
 ## Definition of scope
-To meet the requirements of this project we only need to be running simple node such as a light node on a test network. In this case, a standard Ethereum light node on an Azure Container Instance seems to be the best fit. Stateless clients rely on proofs being provided and don't have a heartbeat interaction with other nodes. Whilst this means they can run with virtually no resources, they don't provide the best use case for a proof of concept. It is more likely that at this time, light nodes such as Lodestar will be widely used and supported. The technical aspects of running a light node provide ample opportunity for showcasing a whole solution including version control and infrastructure as code, Azure container instance, virtual network configuration, security and monitoring. 
+To meet the requirements of this project we only need to be running simple node such as a light node on a test network. In this case, a standard Ethereum light node on an Azure Container Instance seems to be the best fit. Stateless clients rely on proofs being provided and don't have a heartbeat interaction with other nodes. Whilst this means they can run with virtually no resources, they don't provide the best use case for a proof of concept. It is more likely that at this time, light nodes such as Lodestar will be widely used and supported. The technical aspects of running a light node provide ample opportunity for showcasing a whole solution including version control and infrastructure as code, Azure container instance, virtual network configuration, security and monitoring. In addition a secondary container would be required to run a Tailscale sidecar for administrative connections to the Lodestar client.
 
-## What other components are required for the deployment and configuration of the node?
+### What other components are required for the deployment and configuration of the node?
 - GitHub : This is the repository for the .tf files. 
 - GitHub Actions workflow file (.yml) : defines the actions that perform the Terraform workflow.
 - Terraform : Terraform will check the code against the state file, prepare the deployment and push the changes to Azure.
