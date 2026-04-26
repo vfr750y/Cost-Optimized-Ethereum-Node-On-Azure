@@ -196,7 +196,6 @@ Here are the primary assumptions for this architecture:
 | **Compute** | CPU              | 1 vCPU (Linux)                    | Lodestar is efficient; a single core is sufficient for light client header syncing. |
 | **Storage** | Persistence      | Azure File Share (SMB)            | Ensures the client doesn't re-sync the entire header chain on container restart. |
 | **Storage** | Capacity         | 5GB - 10GB                        | Plenty of overhead for the header database and local logs.             |
-| **Networking** | Inbound Port     | 8545 (TCP)                        | Default RPC port for MetaMask/User communication.                      |
 | **Networking** | Outbound Ports   | 30303 (TCP) / 9000 (UDP)          | Required for Ethereum execution and consensus layer peer discovery.    |
 | **Authentication**| IAM           | Entra ID Service Principal        | Required for GitHub Actions to manage Azure resources via Terraform.    |
 
