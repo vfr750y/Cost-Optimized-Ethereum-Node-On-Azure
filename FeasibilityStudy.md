@@ -8,7 +8,7 @@ This project aims to provide benefits by doing the following:
 - Research and minimise costs
 - Providing everyone with a free learning opportunity
 
-## Feasibility Study
+## Feasibility Study objectives
 Investigate the different types of Ethereum node.
 Determine their minimum and recommended requirements.
 Compare the cost of each type.
