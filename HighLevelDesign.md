@@ -102,7 +102,7 @@ graph TB
 ```
 
 
-## Sequence diagram
+## High Level System Processes
 ```mermaid
 sequenceDiagram
     autonumber
@@ -124,7 +124,7 @@ sequenceDiagram
     Prover-->>User: Verified Response
 ```
 
-### Explanation of sequence diagram
+### Explanation of system processes
 Operational Process Flow
 Phase 1: Deployment – The Developer uses an automated "Infrastructure as Code" pipeline. When changes are pushed to GitHub, Terraform Cloud authenticates with Azure to deploy or update the Light Node (Lodestar) within a container. This phase ensures the environment is consistent and uses persistent storage to keep the node's history.
 
