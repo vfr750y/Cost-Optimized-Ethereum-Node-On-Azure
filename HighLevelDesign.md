@@ -137,6 +137,13 @@ Phase 4: Network Propagation – After the Light Node confirms the transaction i
 ## Assumptions
 Here are the primary assumptions for this architecture:
 
+**No Inbound Discovery**: Because the node has no Public IP, it cannot be discovered by others. It must initiate all connections.
+
+**Tailscale Requirement**: The user must have Tailscale running on their local machine to "see" the node.
+
+**Outbound NAT**: We assume the Azure ACI platform provides default outbound internet access (NAT) for peer synchronization.
+
+**Compute**: 2 vCPU and 2GB RAM (Required to handle the three-container group: Lodestar, Prover, and Tailscale).
 
 **Metamask** MetaMask must connect via the Tailscale tunnel (private IP/DNS), as the scenario forbids public RPC exposure.
 
@@ -147,8 +154,6 @@ Here are the primary assumptions for this architecture:
 **SMB Compatibility:** We assume the Lodestar binary (running in Linux) is compatible with mounting Azure File Shares via the SMB protocol for persistent storage.
 
 **Clock Sync:** Light clients are sensitive to time. We assume the underlying Azure host maintains an accurate system clock (via NTP) for block header validation.
-
-**Network configuration:** We assume Azure’s Network Security Group (NSG) can allow outbound traffic on Ethereum P2P ports (usually 30303) and Discovery ports (9000 for consensus layer) so Lodestar can find peers.
 
 **Checkpoint:** The developer can provide a trusted Weak Subjectivity Checkpoint (a recent block hash) in the Terraform configuration to allow Lodestar to sync securely and quickly. Also that the checkpoint can be updated, saved and can be used to resync the light node after a shutdown of any length.
 
@@ -168,25 +173,13 @@ Here are the primary assumptions for this architecture:
 ### Networking security
 We only want to allow inbound RPC traffic from our metamask wallet to the container running the light node. We only want to allow outbound Ethereum based traffic between the light node and its peers. All other traffic should be blocked.
 
-Choosing the correct Azure Container App environment type is critical when considering networking security for the container running the light node.
-There are 2 environment types to choose from.  
+This architecture eliminates the primary attack vector for cloud-hosted nodes.
 
-To secure a **Lodestar Light Client** in **Azure Container Instance (ACI)** without using the premium Azure Firewall, you must leverage **Virtual Network (VNet) Integration** and **Network Security Groups (NSGs)**.
+Zero Public Surface: By setting ip_address_type = "None" (or keeping it "Public" but removing all ports from the public interface in Terraform), there is no IP address for a hacker to scan.
 
-Tailscale will be used to secure a private admin and RPC connections and the NSG will be used to secure port 9000.
+Mesh Isolation: Access is restricted to members of your Tailscale "Tailnet." Authentication is handled at the identity level, not the network level.
 
-https://learn.microsoft.com/en-us/azure/container-apps/environment 
-
-
-https://learn.microsoft.com/en-us/azure/container-apps/networking 
-https://learn.microsoft.com/en-us/azure/container-apps/custom-virtual-networks?tabs=workload-profiles-env 
-
-locking down inbound traffic via NSG or Firewall on an external workload profiles environment isn't supported.
-
-
-	The Container Apps runtime initially generates a fully qualified domain name (FQDN) used to access your app. 
-    Restrict inbound traffic to your container app by IP address.
-    Configure client certificate authentication (also known as mutual TLS or mTLS) for your container app.
+Localhost Only: The Lodestar Admin API and Prover Proxy are configured to listen on 127.0.0.1, ensuring they only respond to the Tailscale sidecar within the same container group.
 
 ## Monitoring
 
