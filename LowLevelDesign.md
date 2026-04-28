@@ -85,14 +85,16 @@ graph TD
 This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for a remote connection. Azure Files is utilized to persist the node state and Tailscale's identity.
 
 ```terraform
-# main.tf (Updated for Dark Node Architecture)
+# main.tf (Finalized Dark Node Architecture)
 
 resource "azurerm_resource_group" "eth_node" {
   name     = "rg-lodestar-node"
   location = var.location
 }
 
-# 1. Storage (Persistent data for Lodestar and Tailscale state)
+# ---------------------------------------------------------
+# 1. Storage Configuration
+# ---------------------------------------------------------
 resource "azurerm_storage_account" "storage" {
   name                     = "stlodestardata${random_string.suffix.result}"
   resource_group_name      = azurerm_resource_group.eth_node.name
@@ -101,24 +103,31 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type = "LRS"
 }
 
+# Separate share for Ethereum chain data
 resource "azurerm_storage_share" "lodestar_share" {
   name                 = "lodestar-data"
   storage_account_name = azurerm_storage_account.storage.name
   quota                = 10
 }
 
-# 2. Container Group (Dark Node - No VNet, No Public IP)
+# Separate share for Tailscale state (identity/keys)
+resource "azurerm_storage_share" "tailscale_share" {
+  name                 = "tailscale-state"
+  storage_account_name = azurerm_storage_account.storage.name
+  quota                = 1
+}
+
+# ---------------------------------------------------------
+# 2. Container Group (The Dark Node)
+# ---------------------------------------------------------
 resource "azurerm_container_group" "node_group" {
   name                = "lodestar-dark-node"
   location            = azurerm_resource_group.eth_node.location
   resource_group_name = azurerm_resource_group.eth_node.name
   os_type             = "Linux"
+  ip_address_type     = "None" # No Public IP
 
-  # "None" removes the public IP entirely. 
-  # Note: ACI still has outbound internet access via platform NAT for peer syncing.
-  ip_address_type     = "None"
-
-  # Lodestar Light Client Container
+  # --- Lodestar Light Client ---
   container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
@@ -135,7 +144,7 @@ resource "azurerm_container_group" "node_group" {
       "--network", "sepolia",
       "--checkpointSyncUrl", "https://checkpoint-sync.sepolia.ethpandaops.io/",
       "--rest",
-      "--rest.address", "127.0.0.1", # Only listen to internal sidecars
+      "--rest.address", "127.0.0.1", # Internal only
       "--rest.port", "9596",
       "--rootDir", "/data"
     ]
@@ -149,7 +158,7 @@ resource "azurerm_container_group" "node_group" {
     }
   }
 
-  # Lodestar Prover Proxy (Allows MetaMask to connect)
+  # --- Lodestar Prover Proxy ---
   container {
     name   = "prover"
     image  = "chainsafe/lodestar:latest"
@@ -160,18 +169,18 @@ resource "azurerm_container_group" "node_group" {
       port     = 8080
       protocol = "TCP"
     }
+
     commands = [
-      "node", "prover", "proxy", # Added "node" here
+      "node", "prover", "proxy",
       "--network", "sepolia",
       "--beaconUrls", "http://127.0.0.1:9596",
       "--executionRpcUrl", var.infura_url,
       "--port", "8080",
-      "--address", "0.0.0.0" 
+      "--address", "0.0.0.0" # Accessible to Tailscale on localhost
     ]
-
   }
 
-  # Tailscale Sidecar (The secure entry point)
+  # --- Tailscale Sidecar ---
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
@@ -179,30 +188,39 @@ resource "azurerm_container_group" "node_group" {
     memory = "0.5"
 
     environment_variables = {
-      TS_AUTHKEY   = var.tailscale_key
-      TS_STATE_DIR = "/var/lib/tailscale"
+      TS_AUTHKEY    = var.tailscale_key
+      TS_STATE_DIR  = "/var/lib/tailscale"
+      TS_USERSPACE  = "true" # Mandatory for ACI
       TS_EXTRA_ARGS = "--hostname=eth-light-node --accept-dns=false"
-      TS_USERSPACE = "true"
     }
 
     volume {
       name                 = "tailscale-state"
       mount_path           = "/var/lib/tailscale"
-      share_name           = azurerm_storage_share.lodestar_share.name
+      share_name           = azurerm_storage_share.tailscale_share.name
       storage_account_name = azurerm_storage_account.storage.name
       storage_account_key  = azurerm_storage_account.storage.primary_access_key
     }
   }
 }
 
+# ---------------------------------------------------------
+# 3. Variables & Helpers
+# ---------------------------------------------------------
 resource "random_string" "suffix" {
   length  = 6
   special = false
   upper   = false
 }
 
+variable "location" {
+  description = "Azure region"
+  type        = string
+  default     = "eastus"
+}
+
 variable "infura_url" {
-  description = "The untrusted Execution Layer RPC URL (Infura/Alchemy)"
+  description = "Execution Layer RPC URL (Infura/Alchemy)"
   type        = string
 }
 
@@ -211,13 +229,6 @@ variable "tailscale_key" {
   type        = string
   sensitive   = true
 }
-
-variable "location" {
-  description = "Azure region"
-  type        = string
-  default     = "eastus" # Or your preferred region
-}
-
 ```
 
 ### Terraform configuration (providers.tf)
