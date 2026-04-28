@@ -262,6 +262,7 @@ Tailscale Key: Created with an Auth Key (reusable recommended) in the Tailscale 
 
 ```yaml
 YAML
+
 name: Deploy Lodestar Node
 
 on:
@@ -272,24 +273,34 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
+      # Azure Authentication
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init
+        # We pass the backend secrets here so Terraform knows where the state lives
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=darknode.terraform.tfstate" \
+            -backend-config="resource_group_name=rg-lodestar-node"
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve \
-          -var="tailscale_key=${{ secrets.TAILSCALE_KEY }}"
-          -var="infura_url=${{ secrets.INFURA_URL }}"
+        # Added the missing backslash (\) after the first variable
+        run: |
+          terraform apply -auto-approve \
+            -var="tailscale_key=${{ secrets.TAILSCALE_KEY }}" \
+            -var="infura_url=${{ secrets.INFURA_URL }}"
 ```
 
 ### GitHub Repository Structure
