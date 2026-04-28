@@ -11,10 +11,17 @@
 
 
 ## Description of solution
-This architecture implements a highly efficient, cloud-native Ethereum light node by leveraging a sidecar container pattern within Azure Container Instances (ACI) to balance public accessibility with private management. The primary Lodestar container functions as the Ethereum interface, utilizing a public IP for P2P network discovery on port 9000 while remaining synchronized via a persistent Azure File Share that prevents data loss during container recycling. 
+This architecture implements a highly secure, cost-optimized Ethereum light node using a "Dark Node" pattern within Azure Container Instances (ACI). By eliminating the Virtual Network (VNet), Network Security Groups (NSG), and Public IP address, the solution reduces the cloud infrastructure footprint to its absolute minimum, significantly lowering monthly Azure costs and removing the public attack surface.
 
-Orchestrated alongside it, a Tailscale sidecar container establishes a secure, encrypted WireGuard tunnel, allowing remote administrators to securely access the node’s REST API on port 9596 via a private mesh network without exposing sensitive endpoints to the open internet. The entire lifecycle—from infrastructure provisioning via Terraform to automated deployments via GitHub Actions—is managed as code, ensuring a reproducible, low-overhead environment that maximizes security through network isolation and minimizes operational costs through right-sized serverless compute.
+The solution is orchestrated as a single ACI Container Group containing three specialized functional sidecars:
 
+Lodestar Light Client: The core consensus engine that performs outbound-only synchronization with the Ethereum P2P network. It maintains a trust-minimized view of the blockchain by syncing headers and verifying data availability.
+
+Lodestar Prover Proxy: A specialized RPC bridge that listens on the container group’s internal loopback interface. It intercepts standard JSON-RPC requests from user wallets and cryptographically verifies the data against the Light Client before responding, providing "Infura-speed with local-node security."
+
+Tailscale Sidecar: The sole entry point for management and interaction. It establishes an encrypted WireGuard tunnel to the user’s private mesh network (Tailnet). This allows the user to interact with the Prover Proxy via a private Tailscale IP or MagicDNS name, ensuring the node remains completely invisible to the public internet.
+
+The entire stack is deployed as Infrastructure as Code (IaC) using Terraform, with state managed in a secure Azure Storage account. Persistence is handled via an Azure File Share mount, ensuring that both Ethereum chain segments and Tailscale identity state persist across container restarts. This design achieves the project's primary goal: a functional, verified Ethereum interface that is "dark" by default, secure by design, and optimized for a restricted budget.
 ## Low level diagram of solution
 
 ```mermaid
