@@ -212,6 +212,12 @@ variable "tailscale_key" {
   sensitive   = true
 }
 
+variable "location" {
+  description = "Azure region"
+  type        = string
+  default     = "eastus" # Or your preferred region
+}
+
 ```
 
 ### Terraform configuration (providers.tf)
