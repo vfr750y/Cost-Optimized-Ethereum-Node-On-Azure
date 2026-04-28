@@ -1,17 +1,17 @@
 ## Overview of project
 
-My early thinking is that this project will follow these steps:
+This project includes the following steps.
 
 ## Project plan
 ### Step 1) Requirements, feasibility, cost analysis and scope
-    - Requirements analysis why am I doing this?
+    - Requirements analysis
     - Assumptions
-    - What are the different types of node? 
-    - What are the minimum Azure components required to get a node?
-    - Cost analysis.
-    - Definition of scope.
+    - Analysis of Ethereum node types 
+    - Analysis of Azure resources
+    - Cost analysis
+    - Definition of scope
     - Risks
-    - Have we looked at all angles are there any other alternative architectures?
+    - Investigation into alternative solutions
 
 ### Step 2) High level design
     - High level description of proposed solution
