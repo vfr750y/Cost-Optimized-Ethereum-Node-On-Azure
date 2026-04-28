@@ -214,6 +214,45 @@ variable "tailscale_key" {
 
 ```
 
+### Terraform configuration (providers.tf)
+```terraform
+# providers.tf
+
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
+  }
+
+  # CRITICAL: This stores your state file in Azure rather than on the local runner.
+  # The values for these (resource_group_name, storage_account_name, etc.) 
+  # are typically passed via 'terraform init -backend-config=...' in CI/CD 
+  # or hardcoded if the storage already exists.
+  backend "azurerm" {
+    resource_group_name  = "rg-lodestar-node"
+    storage_account_name = "stethterraformstate" # Replace with your actual storage name from Step 1.2
+    container_name       = "tfstate"
+    key                  = "darknode.terraform.tfstate"
+  }
+}
+
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
+}
+```
+
 ### GitHub Actions Workflow (deploy.yml)
 To automate the deployment of the solution, Azure credentials and Tailscale key are stored in GitHub Secrets.
 
