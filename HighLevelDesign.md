@@ -74,46 +74,31 @@ The user and the wallet creates a signed request which is sent to the light node
 
 ```mermaid
 graph TB
-    subgraph GitHub ["GitHub (Version control & CI/CD)"]
-        repo["GitHub Repository (.tf files)"]
-        actions["GitHub Actions (.yml)"]
-        secrets["GitHub Secrets (Azure SPN Details)"]
+    subgraph Client_Env [Local Environment]
+        Wallet((MetaMask))
+        TS_App[Tailscale Client]
     end
 
-    subgraph TF_Cloud ["Terraform orchestrator (Logic & State)"]
-        TF["Terraform Account"]
-    end
-
-    subgraph Azure ["Azure Subscription"]
+    subgraph Azure ["Azure Subscription (No VNet/No NSG)"]
         direction TB
-        SPN["Entra ID Service Principal"]
         
-        subgraph Data_Storage ["Storage Layer"]
-            State[("Storage Account: tfstate")]
-            FS[("Azure File Share: Persistent Storage")]
+        subgraph ACI_Group ["ACI Container Group (Public IP: None)"]
+            direction LR
+            Lodestar["Lodestar Light Client"]
+            Prover["Lodestar Prover"]
+            Tailscale["Tailscale Sidecar"]
         end
 
-        subgraph Runtime ["Compute Group"]
-            subgraph ACI_Instance ["Azure Container Instance (Linux)"]
-                Lodestar["Lodestar Light Client"]
-            end
-        end
+        FS[("Azure File Share: Persistent Data")]
     end
 
-    User((MetaMask Wallet))
-
-    %% CI/CD Flow
-    repo & secrets --> actions
-    actions --> TF
-
-    %% Infrastructure Flow
-    TF --> SPN
-    SPN --> Runtime
-    TF -.-> State
-
-    %% Execution & Persistence
-    Lodestar -- "Mounts" --> FS
-    User ==> Lodestar
+    %% Networking
+    Wallet --> TS_App
+    TS_App == "WireGuard Tunnel" ==> Tailscale
+    Tailscale -. "Localhost" .-> Prover
+    Prover -. "Localhost" .-> Lodestar
+    Lodestar -- "Outbound Only" --> Eth_Network((Ethereum P2P))
+    Lodestar -- "Mount" --> FS
 ```
 
 
