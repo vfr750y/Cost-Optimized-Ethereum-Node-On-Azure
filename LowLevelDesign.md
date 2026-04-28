@@ -270,6 +270,34 @@ provider "azurerm" {
 }
 ```
 
+### Outputs.tf
+```terraform
+output "container_group_name" {
+  description = "The name of the deployed container group."
+  value       = azurerm_container_group.node_group.name
+}
+
+output "storage_account_name" {
+  description = "The name of the storage account (useful for logs/portal access)."
+  value       = azurerm_storage_account.storage.name
+}
+
+output "tailscale_hostname" {
+  description = "The hostname to use in your wallet/browser once Tailscale is connected."
+  value       = "eth-light-node"
+}
+
+output "rpc_connection_string" {
+  description = "The internal RPC endpoint accessible via Tailscale."
+  value       = "http://eth-light-node:8080"
+}
+
+output "how_to_verify" {
+  description = "Command to run from your local machine to verify the node is alive."
+  value       = "curl -X POST -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' http://eth-light-node:8080"
+}
+```
+
 ### GitHub Actions Workflow (deploy.yml)
 To automate the deployment of the solution, Azure credentials and Tailscale key are stored in GitHub Secrets.
 
