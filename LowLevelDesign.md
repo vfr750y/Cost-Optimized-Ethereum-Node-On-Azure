@@ -508,9 +508,9 @@ az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
 STORAGE_NAME="stethterraformstate$(openssl rand -hex 4)"
 az storage account create --name $STORAGE_NAME --resource-group rg-lodestar-node --location eastus --sku Standard_LRS
 az storage container create --name tfstate --account-name $STORAGE_NAME
+echo "Store this in GitHub Secrets as TF_STATE_STORAGE_ACCOUNT: $STORAGE_NAME"
 ```
 
----
 
 ### Phase 2: Repository & Secret Management
 
