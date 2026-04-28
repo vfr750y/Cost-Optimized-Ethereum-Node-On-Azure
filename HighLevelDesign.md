@@ -106,37 +106,22 @@ graph TB
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Dev as Developer
-    participant GH as GitHub Actions
-    participant TF as Terraform Cloud
-    participant Azure as Azure (ACI/Lodestar)
-    participant FS as Azure File Share
-    participant BC as Ethereum P2P
-
-    Note over Dev, GH: Phase 1: Deployment
-    Dev->>GH: Push .tf changes to main
-    GH->>GH: Authenticate via GitHub Secrets
-    GH->>TF: Trigger 'terraform apply'
-    TF->>Azure: Auth via Entra ID (Service Principal)
-    Azure->>Azure: Update ACI with Lodestar Image
-    Azure->>FS: Mount Persistent Storage
-
-    Note over Azure, BC: Phase 2: Runtime
-    Azure->>FS: Load existing Chain Data/Keys
-    Azure->>BC: Sync Block Headers (P2P)
-    
-    Note over User, Azure: Phase 3: User Interaction
     actor User as MetaMask User
-    participant Wallet as Local Wallet (Vault)
+    participant TS as Tailscale (Local)
+    participant Prover as Prover Proxy (ACI)
+    participant LC as Light Client (ACI)
+    participant BC as Ethereum Network
+
+    Note over LC, BC: Runtime: Outbound Sync
+    LC->>BC: Outbound P2P Dial-out
+    BC-->>LC: Block Headers
     
-    User->>Wallet: 1. Request Signature
-    Wallet->>Wallet: 2. Sign Tx (Private Key)
-    User->>Azure: 3. Send RPC Request (URL)
-    Azure->>Azure: 4. Validate (Sig, Nonce, Balance)
-    Azure-->>User: 5. Response (Verified Headers/Hash)
-    
-    Note over Azure, BC: Phase 4: Network Propagation
-    Azure->>BC: 6. Broadcast Signed Tx to Network
+    Note over User, LC: User Interaction (Private)
+    User->>TS: Send RPC Request (via Tailscale IP)
+    TS->>Prover: Route through WireGuard Tunnel
+    Prover->>LC: "Is this data valid?"
+    LC-->>Prover: "Yes, proof verified."
+    Prover-->>User: Verified Response
 ```
 
 ### Explanation of sequence diagram
