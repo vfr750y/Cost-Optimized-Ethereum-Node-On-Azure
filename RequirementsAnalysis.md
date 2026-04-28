@@ -1,5 +1,3 @@
-Date 27-Jan-2026
-
 ## Outline of requirements
 This project aims to provide benefits by doing the following:
 
