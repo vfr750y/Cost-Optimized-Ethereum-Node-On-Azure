@@ -125,6 +125,11 @@ resource "azurerm_container_group" "node_group" {
     cpu    = "0.5"
     memory = "1.5"
 
+    ports {
+      port     = 9596
+      protocol = "TCP"
+    }
+
     commands = [
       "node", "light-client",
       "--network", "sepolia",
