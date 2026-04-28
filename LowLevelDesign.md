@@ -26,10 +26,9 @@ graph TD
     subgraph Azure_Cloud [Azure Subscription]
         direction TB
         
-        subgraph ACI_Group [Container Group: No Public IP]
+        subgraph ACI_Group [Container Group: Dark Node]
             direction LR
-            %% ACI Group in pastel green
-            L[Lodestar Container]
+            L[Lodestar Light Client]
             P[Prover Proxy]
             T[Tailscale Sidecar]
         end
@@ -59,13 +58,18 @@ graph TD
     T -. "Localhost" .-> P
     P -. "Verify via Localhost" .-> L
 
-    %% Styling Updates
-    style ACI_Group fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px %% Pastel Green
-    style Private_Mesh fill:#fff3e0,stroke:#ffb74d,stroke-dasharray: 5 5
-    style L fill:#f1f8e9
-    style P fill:#f1f8e9
-    style T fill:#f1f8e9
-```
+    %% High-Contrast Styling
+    style ACI_Group fill:#1a237e,stroke:#ffffff,stroke-width:2px,color:#ffffff %% Deep Navy Blue
+    style Private_Mesh fill:#fff3e0,stroke:#ff6d00,stroke-width:3px,stroke-dasharray: 5 5,color:#e65100 %% Vivid Orange
+    
+    style L fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
+    style P fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
+    style T fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
+    
+    style Internet fill:#f5f5f5,stroke:#333
+    style Provider fill:#f5f5f5,stroke:#333
+    style GitHub_Actions fill:#eceff1,stroke:#455a64
+```    
 
 
 ### Terraform Configuration (main.tf)
