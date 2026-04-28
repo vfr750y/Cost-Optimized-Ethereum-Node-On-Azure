@@ -262,27 +262,36 @@ jobs:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant RA as Remote Admin Device
+    participant RA as Remote User/Admin
     participant TS_RA as Tailscale Client (Remote)
     participant TS_AZ as Tailscale Sidecar (Azure)
-    participant LS as Lodestar Container (Azure)
+    participant PP as Prover Proxy (Sidecar)
+    participant LS as Lodestar Light Client (Sidecar)
 
-    Note over RA, LS: Prerequisite: Both Tailscale clients are authenticated to the same Tailnet.
+    Note over RA, LS: Prerequisite: Tailnet connectivity & Prover listening on localhost:8080
 
-    Note left of RA: 1. Admin issues command<br/>(e.g., to curl lodestar-node:9596)
-    RA->>TS_RA: 2. Traffic intercepted (tun interface)
-    Note right of TS_RA: 3. Encapsulate and encrypt<br/>original packet (WireGuard)
-    TS_RA->>TS_AZ: 4. Sent over Public Internet (UDP)
-    Note left of TS_AZ: 5. Decrypt and decapsulate original packet
-    TS_AZ->>LS: 6. Forward original request to localhost:9596
+    Note left of RA: 1. User/Admin issues RPC request<br/>(e.g., MetaMask eth_getBalance)
+    RA->>TS_RA: 2. Traffic routed to Tailscale IP
+    Note right of TS_RA: 3. Encapsulate & Encrypt (WireGuard)
+    TS_RA->>TS_AZ: 4. Secure Tunnel over Public Internet
+    Note left of TS_AZ: 5. Decrypt packet at Azure Gateway
+    
+    TS_AZ->>PP: 6. Forward request to localhost:8080
+    activate PP
+    
+    Note right of PP: 7. Intercept Request
+    PP->>LS: 8. Verify State via Localhost:9596
     activate LS
-    Note right of LS: 7. Process REST API command
-    LS-->>TS_AZ: 8. Return JSON response
+    LS-->>PP: 9. Return Verified Header/Proof
     deactivate LS
-    Note left of TS_AZ: 9. Encapsulate and encrypt response
-    TS_AZ->>TS_RA: 10. Sent over Public Internet (UDP)
-    Note right of TS_RA: 11. Decrypt and decapsulate response
-    TS_RA-->>RA: 12. Deliver response to application
+    
+    Note right of PP: 10. Construct Verified JSON Response
+    PP-->>TS_AZ: 11. Return Response
+    deactivate PP
+    
+    Note left of TS_AZ: 12. Encrypt response for return tunnel
+    TS_AZ->>TS_RA: 13. Secure Tunnel (Return)
+    TS_RA-->>RA: 14. Deliver verified data to Wallet/App
 ```
 
 ### Sequence diagram for internet to Lodestar Client.
