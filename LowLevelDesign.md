@@ -66,9 +66,9 @@ graph TD
     style P fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
     style T fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
     
-    style Internet fill:#f5f5f5,stroke:#333
-    style Provider fill:#f5f5f5,stroke:#333
-    style GitHub_Actions fill:#f5f5f5,stroke:#333
+    style Internet fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
+    style Provider fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
+    style GitHub_Actions fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
 ```    
 
 
