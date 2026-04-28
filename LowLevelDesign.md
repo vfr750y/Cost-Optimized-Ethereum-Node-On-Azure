@@ -156,6 +156,11 @@ resource "azurerm_container_group" "node_group" {
     cpu    = "0.5"
     memory = "1.0"
 
+    ports {
+      port     = 8080
+      protocol = "TCP"
+    }
+
     commands = [
       "prover", "proxy",
       "--network", "sepolia",
