@@ -26,46 +26,46 @@ graph TD
     subgraph Azure_Cloud [Azure Subscription]
         direction TB
         
-        subgraph VNet [Virtual Network: 10.0.0.0/16]
-            direction TB
-            
-            %% NSG as a subtle blue rectangle
-            NSG[Network Security Group]
-            
-            subgraph Subnet [ACI Subnet: 10.0.1.0/24]
-                direction LR
-                %% ACI Group in pastel green
-                subgraph ACI [Container Group]
-                    L[Lodestar Container]
-                    T[Tailscale Sidecar]
-                end
-            end
+        subgraph ACI_Group [Container Group: No Public IP]
+            direction LR
+            %% ACI Group in pastel green
+            L[Lodestar Container]
+            P[Prover Proxy]
+            T[Tailscale Sidecar]
         end
 
         SA[(Azure Storage Account)]
     end
 
     %% Deployment Flow
-    B -- "Configures" --> VNet
+    B -- "Configures Resources" --> ACI_Group
     
-    %% Internet Traffic Flow
-    Internet((Internet)) -- "Port 9000" --> NSG
-    NSG -- "Allow" --> L
+    %% Internet Traffic Flow (Outbound Only)
+    L -- "Outbound P2P Sync" --> Internet((Ethereum Network))
+    P -- "Fetch Data" --> Provider((Untrusted EL RPC))
     
     %% Storage Persistence
     L --- SA
     T --- SA
 
-    %% Secure Management Flow
-    Remote_User[Remote Admin] -. "WireGuard Tunnel" .-> T
-    T -- "Localhost API" --> L
+    %% Private Access Flow (Inbound via Tunnel)
+    subgraph Private_Mesh [Tailscale Mesh Network]
+        Remote_User[User Wallet]
+    end
+
+    Remote_User == "Secure WireGuard Tunnel" ==> T
+    
+    %% Internal Logic (Localhost)
+    T -. "Localhost" .-> P
+    P -. "Verify via Localhost" .-> L
 
     %% Styling Updates
-    style NSG fill:#e3f2fd,stroke:#90caf9,stroke-width:2px %% Subtle Blue
-    style ACI fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px %% Pastel Green
-    style VNet fill:#f5f5f5,stroke:#666
-  
-  ```
+    style ACI_Group fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px %% Pastel Green
+    style Private_Mesh fill:#fff3e0,stroke:#ffb74d,stroke-dasharray: 5 5
+    style L fill:#f1f8e9
+    style P fill:#f1f8e9
+    style T fill:#f1f8e9
+```
 
 
 ### Terraform Configuration (main.tf)
