@@ -372,215 +372,106 @@ To harden this "Dark" setup, we implement a **Zero-Trust Sidecar** strategy:
 
 
 ## Detailed implementation steps
+The transition to the **Dark Node** architecture significantly simplifies your Azure networking footprint (no VNets or NSGs) but adds a layer to your application stack (the Prover Proxy). 
 
+Here are the updated implementation steps for your **Low Level Design (LLD)**.
+
+---
+
+## Detailed Implementation Steps (Dark Node Architecture)
 
 ### Phase 1: Bootstrapping & Identity
-Build the Terraform management plane
+Build the Terraform management plane.
 
 #### Step 1.0: Create the Target Resource Group
-Since the SPN will be restricted to this group, it needs to exist beforehand. 
-
-Azure Cloud Shell commands (bash):
-
-```Bash
-# Set your variables
+```bash
 RG_NAME="rg-lodestar-node"
-LOCATION="eastus" # or your preferred region
-
-# Create the Resource Group
+LOCATION="eastus" 
 az group create --name $RG_NAME --location $LOCATION
 ```
 
 #### Step 1.1: Azure Service Principal (SPN) Creation
-Create the SPN and restrict its "Contributor" role strictly to that group. 
-NOTE: replace {subscription-id}.
-
-```Bash
+```bash
 az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
   --scopes /subscriptions/{subscription-id}/resourceGroups/rg-lodestar-node \
   --sdk-auth
 ```
 
-Verification: Go to the Azure Portal > Resource Groups > rg-lodestar-node > Access Control (IAM). You should see "github-eth-node-sp" listed with the Contributor role for the resource group.
-
 #### Step 1.2: Terraform Backend Setup
-We need a place to store the `.tfstate` for GitHub Actions to keep track of resources.
-* **Action:** Create a Terraform state Storage Account inside the same Resource Group (rg-lodestar-node).
-In the Azure Cloud Shell run the following commands
+* **Action:** Create the Storage Account for state management.
 ```bash
-# 1. Generate a unique name for your storage account (must be globally unique)
-# This appends a random 4-character hex string to the name
 STORAGE_NAME="stethterraformstate$(openssl rand -hex 4)"
-RG_NAME="rg-lodestar-node"
-LOCATION="eastus"
-
-# 2. Create the storage account inside the scoped Resource Group
-az storage account create \
-  --name $STORAGE_NAME \
-  --resource-group $RG_NAME \
-  --location $LOCATION \
-  --sku Standard_LRS \
-  --encryption-services blob
-  --enable-versioning true
-
-# 3. Create the blob container for the state file
-az storage container create \
-  --name tfstate \
-  --account-name $STORAGE_NAME
-
-# 4. Display the name so you can copy it to your Terraform 'backend' config
-echo "Your Terraform Storage Account Name is: $STORAGE_NAME"
-```
-Verification step
-```bash
-az storage account show --name $STORAGE_NAME --resource-group rg-lodestar-node --query "provisioningState"
+az storage account create --name $STORAGE_NAME --resource-group rg-lodestar-node --location eastus --sku Standard_LRS
+az storage container create --name tfstate --account-name $STORAGE_NAME
 ```
 
 ---
 
 ### Phase 2: Repository & Secret Management
-#### Step 2.1: Secure Tailscale Authentication
 
-1. Create your Tailscale Account (if not already created)
-- Go to tailscale.com.
-- Click "Get Started for Free" or "Log in".
-- Sign in using a "Single Sign-On" (SSO) provider. Tailscale doesn't use passwords; it uses your existing identity from GitHub, Google, or Microsoft.
-Recommendation: Use the same GitHub account you are using for this project to keep your "DevOps" identity consistent.
-
-2. Access the Admin Console
-Once you are logged in, you will be taken to the Dashboard (this is the "Admin Console"). If you are on their homepage, there will be an "Admin Console" button in the top right corner.
-
-3. Generate the Auth Key (The Step-by-Step)
-Now that you're in the console:
-- Click on the Settings tab in the top navigation bar.
-- On the left-hand sidebar, click Keys.
-- In the Auth keys section, click the Generate auth key... button.
-- Configure the settings exactly like this:
-- Description: Give it a name like azure-eth-node.
-- Reusable: Check this box. Since containers in ACI might restart, you want the new container instance to be able to use the same key to re-join your network.
-- Ephemeral: Check this box. This is a "cleanliness" feature. It tells Tailscale: "If this container goes offline and doesn't come back for a while, delete it from my dashboard automatically."
-- Expiration: Set it to whatever you feel comfortable with (e.g., 90 days). You'll just need to update your GitHub Secret when it expires.
-- Click Generate key.
-
-4. Secure the Key
-- Copy the key immediately (it starts with tskey-auth-...).
-Warning: You will never see this key again once you close the pop-up.
-- Action: Go straight to your GitHub Repository -> Settings -> Secrets and variables -> Actions and create a new secret named TAILSCALE_AUTH_KEY and paste the value there.
-
-
+#### Step 2.1: Secure Tailscale & Infura Secrets
+1. **Tailscale:** Generate an **Auth Key** in the Tailscale Admin Console. 
+   - **Settings:** Reusable = Yes, Ephemeral = Yes, Pre-authorized = Yes.
+   - **Action:** Save to GitHub Secrets as `TAILSCALE_KEY`.
+2. **Infura/Alchemy:** Create a free project and copy the **HTTPS Execution Layer URL** (e.g., `https://sepolia.infura.io/v3/...`).
+   - **Action:** Save to GitHub Secrets as `INFURA_URL`.
 
 #### Step 2.2: GitHub Secrets Injection
-* **Action:** Populate your GitHub Repository Secrets with:
+* **Action:** Populate GitHub Secrets with:
     * `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
     * `TAILSCALE_KEY`
-* **Verification:** Create a dummy GitHub Action that prints "Secrets Loaded" (do not print the actual secrets!) to ensure the environment variables are mapping correctly.
-1. Create the Workflow File
-In your local repository (or directly in GitHub), create a new file at this exact path:
-`.github/workflows/verify-secrets.yml`
-
-2. Add the Test Code
-Paste the following configuration into that file. This workflow doesn't install anything; it just checks if the "containers" for your secrets are populated.
-
-```yaml
-name: Verify Secrets Mapping
-
-on: 
-  workflow_dispatch: # This allows you to run it manually for testing
-
-jobs:
-  test-secrets:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Azure Credentials
-        run: |
-          if [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
-            echo "✅ AZURE_CREDENTIALS is set."
-          else
-            echo "❌ AZURE_CREDENTIALS is MISSING."
-            exit 1
-          fi
-
-      - name: Check Tailscale Key
-        run: |
-          if [ -n "${{ secrets.TAILSCALE_AUTH_KEY }}" ]; then
-            echo "✅ TAILSCALE_AUTH_KEY is set."
-          else
-            echo "❌ TAILSCALE_AUTH_KEY is MISSING."
-            exit 1
-          fi
-
-      - name: Verify Secret Format (Optional)
-        run: |
-          # This checks if the Azure secret looks like JSON without printing the contents
-          echo "${{ secrets.AZURE_CREDENTIALS }}" | grep -q "clientId" && echo "✅ Azure JSON format looks correct." || echo "⚠️ Azure Secret might not be in the correct JSON format."
-```
-
-
-
-3. Run the Verification
-- **Commit and Push** this file to your GitHub repository.
-- Go to the **Actions** tab at the top of your GitHub repo page.
-- On the left sidebar, click on **"Verify Secrets Mapping"**.
-- Click the **"Run workflow"** dropdown button on the right and hit the green button.
-
-4. Interpreting the Results
-* **Green Checkmarks:** Your environment variables are correctly mapped. You are safe to proceed to the Terraform deployment.
-* **Red "X":** GitHub cannot find the secret. This usually means there is a **typo** between the name you gave the secret in the "Settings" tab and the name you used in the YAML file (e.g., `TAILSCALE_KEY` vs `TAILSCALE_AUTH_KEY`).
-
-### Why this is "Best Practice"
-GitHub automatically masks secrets in logs (replacing them with `***`). However, if you accidentally echo a secret that isn't properly recognized as a secret, you could leak it to your logs. By using the `-n` (not empty) check in a shell script, we verify the **existence** of the data without ever risking the **exposure** of the data.
+    * `INFURA_URL`
 
 ---
 
-### Phase 3: Infrastructure Deployment (The "Apply" Phase)
-#### Step 3.1: Terraform Initialization
-* **Action:** Trigger the GitHub Action by pushing your `main.tf` and `variables.tf`.
-* **Verification:** Check the **Terraform Init** logs in GitHub Actions to ensure the backend provider (Azure Storage) connects successfully.
+### Phase 3: Infrastructure Deployment (The "Dark" Apply)
 
-#### Step 3.2: Resource Provisioning
-* **Action:** Run the `terraform apply`.
-* **Verification:** * Navigate to the Azure Portal. 
-    * Verify the **Resource Group** exists.
-    * Confirm the **Azure File Share** is created (this is critical for Lodestar's persistent database).
+#### Step 3.1: Terraform Apply
+* **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
+* **Verification:** Navigate to the Azure Portal > Container Groups.
+    * **Confirm:** The group exists.
+    * **Confirm:** There is **no Public IP address** assigned to the instance.
 
 ---
 
 ### Phase 4: Container Orchestration & Networking
-#### Step 4.1: Sidecar Initialization (Tailscale)
-Once ACI starts, the Tailscale container must join your "Tailnet."
-* **Action:** Monitor the Tailscale Admin Console.
-* **Verification:** A new machine (e.g., `lodestar-light-node`) should appear in your Tailscale dashboard with a **100.x.y.z** IP address.
 
-#### Step 4.2: Lodestar Startup & Checkpoint Sync
-The Lodestar container will start and attempt to sync using the `checkpointSyncUrl`.
-* **Action:** Use the Azure CLI to stream logs:
+#### Step 4.1: Sidecar Initialization (Tailscale)
+* **Action:** Monitor the Tailscale Admin Console.
+* **Verification:** A new machine named `eth-light-node` should appear. Note its **Tailscale IP** (100.x.y.z).
+
+#### Step 4.2: Lodestar & Prover Startup
+* **Action:** Stream the logs for the three containers:
     ```bash
-    az container logs --resource-group rg-lodestar-node --name lodestar-light-node --container-name lodestar
+    # Check Light Client Sync
+    az container logs -g rg-lodestar-node -n lodestar-dark-node --container-name lodestar
+    # Check Prover Proxy Connectivity
+    az container logs -g rg-lodestar-node -n lodestar-dark-node --container-name prover
     ```
-* **Verification:** Look for the log line: `Verified transition to new sync committee`. This confirms the light client has successfully performed the "Weak Subjectivity" handshake.
+* **Verification:** * `lodestar`: Look for `Verified transition to new sync committee`.
+    * `prover`: Look for `Proxy server listening on port 8080`.
 
 ---
 
 ### Phase 5: Final Validation & Connectivity
-#### Step 5.1: The "Private Tunnel" Test
-Now we verify that the RPC port (9596) is truly private but accessible to you.
-* **Action:** On your local laptop (with Tailscale running), run a CURL command against the **Tailscale IP**:
-    ```bash
-    curl http://<Tailscale-IP>:9596/eth/v1/beacon/genesis
-    ```
-* **Verification:** You should receive a JSON response containing the Ethereum Genesis data.
 
-#### Step 5.2: Public Port Scan (Security Audit)
-* **Action:** Find the **Public IP** of your ACI in the Azure Portal. Use `nmap` or an online port scanner.
-* **Verification:**
-    * **Port 9000 (TCP/UDP):** Should be **Open** (required for P2P).
-    * **Port 9596 (TCP):** Should be **Filtered/Closed** (successfully hidden by your architecture).
+#### Step 5.1: The "Verified RPC" Test
+We verify that MetaMask/Rabby can talk to the **Prover**, which in turn talks to **Lodestar**.
+* **Action:** On your local laptop (with Tailscale active), run:
+    ```bash
+    curl -X POST -H "Content-Type: application/json" \
+      --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+      http://eth-light-node:8080
+    ```
+* **Verification:** You should receive a hex block number. This proves the "Dark Node" is fetching data from Infura and verifying it against your light client.
+
+#### Step 5.2: Security Audit (Invisibility Test)
+* **Action:** Attempt to ping or port scan your Azure Resource Group's internal IP from outside Tailscale.
+* **Verification:** The node should be **unreachable**. There is no public path to the node; it only exists within your private mesh.
 
 ---
 
-### Engineering Observations & Tips
-* **Resource Throttling:** You allocated `0.5 CPU` to Lodestar. During the initial header sync, you might see 100% usage. If the container restarts frequently (OOM Killed), consider bumping memory to `1.5GB`.
-* **Storage Performance:** Since you are using a Standard LRS File Share, the IOPS are limited. For a Light Client, this is fine. However, if you see "Database Timeout" in the logs, it’s likely the SMB latency.
-* **Tailscale ACLs:** In your Tailscale dashboard, I recommend setting an ACL to only allow *your* specific laptop tag to talk to the node tag on port 9596.
-
-This plan moves you from a static design to a living, breathing node. Ready to push the first commit?
+### Engineering Observations & Tips for Dark Nodes
+* **Resource Balancing:** You have 3 containers now. Ensure you have allocated at least **2.0GB - 2.5GB RAM** total to the group to prevent the Prover and Lodestar from competing for memory during heavy sync periods.
+* **Outbound Latency:** Since the node has no public IP, it relies on NAT. If you notice slow peer discovery, it's often due to Azure's SNAT port limits. Keeping the node running (High Uptime) allows it to maintain a stable pool of outbound peers.
+* **MagicDNS:** If Tailscale MagicDNS is enabled, you can use `http://eth-light-node:8080` in MetaMask instead of the 100.x.y.z IP, which is much easier to manage.
