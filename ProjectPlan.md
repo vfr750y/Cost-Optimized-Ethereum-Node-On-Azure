@@ -3,7 +3,7 @@
 This project includes the following steps.
 
 ## Project plan
-### Step 1) Requirements, feasibility, cost analysis and scope
+### Step 1) Requirements anaylsis
     - Requirements analysis
     - Assumptions
     - Analysis of Ethereum node types 
