@@ -160,15 +160,15 @@ resource "azurerm_container_group" "node_group" {
       port     = 8080
       protocol = "TCP"
     }
-
     commands = [
-      "prover", "proxy",
+      "node", "prover", "proxy", # Added "node" here
       "--network", "sepolia",
       "--beaconUrls", "http://127.0.0.1:9596",
-      "--executionRpcUrl", var.infura_url, # Untrusted data source to be verified
+      "--executionRpcUrl", var.infura_url,
       "--port", "8080",
-      "--address", "0.0.0.0" # Accessible to Tailscale via localhost/shared namespace
+      "--address", "0.0.0.0" 
     ]
+
   }
 
   # Tailscale Sidecar (The secure entry point)
