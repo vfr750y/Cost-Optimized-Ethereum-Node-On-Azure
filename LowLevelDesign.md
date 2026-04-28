@@ -181,7 +181,7 @@ resource "azurerm_container_group" "node_group" {
     environment_variables = {
       TS_AUTHKEY   = var.tailscale_key
       TS_STATE_DIR = "/var/lib/tailscale"
-      TS_EXTRA_ARGS = "--hostname=eth-light-node"
+      TS_EXTRA_ARGS = "--hostname=eth-light-node --accept-dns=false"
       TS_USERSPACE = "true"
     }
 
