@@ -60,12 +60,12 @@ graph TD
 
     %% High-Contrast Styling
     style ACI_Group fill:#1a237e,stroke:#ffffff,stroke-width:2px,color:#ffffff %% Deep Navy Blue
-    style Private_Mesh fill:#fff9c4,stroke:#fbc02d,stroke-width:3px,stroke-dasharray: 5 5,color:#000000 %% High-Vis Yellow
+    style Private_Mesh fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
     
     style L fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
     style P fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
     style T fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
-    style Remote_User fill:#fbc02d,stroke:#000000,color:#000000 %% Solid Yellow with Black Text
+    style Remote_User fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
     
     style Internet fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
     style Provider fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
