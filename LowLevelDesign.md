@@ -68,7 +68,7 @@ graph TD
     
     style Internet fill:#f5f5f5,stroke:#333
     style Provider fill:#f5f5f5,stroke:#333
-    style GitHub_Actions fill:#eceff1,stroke:#455a64
+    style GitHub_Actions fill:#f5f5f5,stroke:#333
 ```    
 
 
