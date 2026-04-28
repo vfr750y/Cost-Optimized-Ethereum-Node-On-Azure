@@ -8,47 +8,44 @@ This high level design specifies all relevant components of the proposed solutio
 ```mermaid
 erDiagram
     USER ||--o{ WALLET : "manages"
-    WALLET ||--o{ TRANSACTION : "signs"
-    TRANSACTION }o--|| LIGHT_CLIENT : "submitted to"
-    LIGHT_CLIENT ||--o{ P2P_NETWORK : "broadcasts to / syncs with"
+    WALLET ||--o{ PROVER_PROXY : "connects to"
+    PROVER_PROXY ||--|| LIGHT_CLIENT : "queries / verifies"
+    LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
 ```
 
 ### Diagram explanation
 1. **User to Wallet:**
 An individual user acts as the owner of their private keys. A User must exist for a Wallet to be managed, but a new User might not have created a Wallet yet (hence "Zero or Many"). However, a Wallet is logically tied to exactly one owner for accountability and access control.
 
-2. **Wallet to Transaction:**
-The Wallet uses its private key to digitally sign data payloads, transforming them into valid Ethereum transactions. A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature.
+2. **Wallet to Prover Proxy:**
+The Wallet uses its private key to digitally sign data payloads, transforming them into valid Ethereum transactions. A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature. The wallet connects to a secure RPC endpoint provided by the Prover Proxy over a private Tailscale tunnel.
 
-3. **Transaction to Light Client:**
-The signed Transaction is sent to the Light Client. A Light Client acts as a gateway; it can receive many different transactions from various sources. From the perspective of the Transaction, it is submitted to one specific node to enter the network, though it may eventually exist on all nodes.
+3. **Prover Proxy to Light Client:**
+The wallet connects to a secure RPC endpoint provided by the Prover Proxy over a private Tailscale tunnel.
 
-4. **Light Client to Ethereum Node Network:**
-The Light Client maintains active P2P (Peer-to-Peer) connections to sync block headers and broadcast transactions. It maintains connections to many peers (Full Nodes) simultaneously.
-
+4. **Light Client to P2P Network:**
+The node performs outbound-only connections to Ethereum peers to stay synced.
 ## Data flow diagram
 ```mermaid
 graph TD
-    User((User))
+    User((User Wallet))
     
-    subgraph LocalWallet [User Wallet / Environment]
-        Vault[(Private Key Vault)]
-        Signer[1.0 Create & Sign Transaction]
-    end
-    
-    subgraph LC [Light Client Node]
-        P2[2.0 Validate Transaction]
-        P3[3.0 Broadcast to Network]
+    subgraph ACI_Group [Azure Container Group - Private]
+        direction TB
+        Tailscale[Tailscale Sidecar]
+        Prover[Lodestar Prover Proxy]
+        LC[Lodestar Light Client]
     end
 
     Network((Ethereum P2P Network))
+    Infura((Untrusted EL RPC))
 
     %% Data Flows
-    User -->|Initiates Tx| Signer
-    Vault -->|Sign with Private Key| Signer
-    Signer -->|Signed Transaction| P2
-    P2 -->|Check Nonce/Balance/Signature| P3
-    P3 <-->|Gossip Protocol / Block Headers| Network
+    User -- "1. Private RPC (Tailscale IP)" --> Tailscale
+    Tailscale -- "2. Localhost:8080" --> Prover
+    Prover -- "3. Verify Proofs" --> LC
+    Prover -- "4. Fetch Raw Data" --> Infura
+    LC -- "5. Outbound Sync" --> Network
 ```
 
 ### Explanation of data flow diagram
