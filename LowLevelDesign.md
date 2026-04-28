@@ -299,70 +299,76 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Peer as External Eth Peer (Internet)
-    participant NSG as Azure NSG (Port Filter)
+    participant NAT as Azure Platform NAT
     participant LS as Lodestar Container (Azure ACI)
     participant Disk as Azure File Share (Storage)
 
-    Note over Peer, LS: Scenario 1: Successful Handshake
+    Note over LS, Peer: Scenario 1: Outbound Peer Discovery (Node Initiated)
 
-    Peer->>NSG: 1. Inbound P2P Connection Request (TCP/UDP :9000)
-    Note right of NSG: 2. Check Rules:<br/>Matches 'AllowP2P' Rule
-    NSG->>LS: 3. Forward Traffic to Container
+    LS->>NAT: 1. Outbound Discovery Request (UDP :9000)
+    NAT->>Peer: 2. Forward to Peer via Azure NAT IP
+    Peer-->>NAT: 3. Discovery Pong / Handshake
+    NAT-->>LS: 4. Route back to Container
     activate LS
-    LS->>Peer: 4. P2P Handshake & Hello
-    Peer->>LS: 5. Request Light Client Headers
-    LS->>Disk: 6. Read Local Sync State
-    Disk-->>LS: 7. Return Header Data
-    LS-->>Peer: 8. Serve Block Headers
+    LS->>Disk: 5. Persist Peer Info / Sync State
+    LS-->>Peer: 6. Request Block Headers (Active Sync)
     deactivate LS
 
-    Note over Peer, LS: Scenario 2: Blocked Management Access
+    Note over Peer, LS: Scenario 2: Implicit Inbound Security
 
-    Peer-xNSG: 9. Attempt Connection to REST API (TCP :9596)
-    Note right of NSG: 10. Check Rules:<br/>No Match (Implicit Deny)
-    Note over Peer, NSG: Traffic Dropped by Azure Firewall
+    Peer-xNAT: 7. External Peer attempts to dial Node IP
+    Note right of NAT: 8. REJECTED: No Public IP mapped<br/>(Dark Node is invisible)
+
+    Note over Peer, LS: Scenario 3: Attempted API Scan
+
+    Peer-xNAT: 9. Hacker scans for REST API (:9596) or RPC (:8080)
+    Note right of NAT: 10. DROP: No Inbound Path Exists
 ```
 
 ## Detailed breakdown of costs
 ## Detailed description of security risks and mitigations
 
-While the Tailscale sidecar significantly hardens the management plane, the nature of Ethereum P2P networking necessitates some exposure.
-The attack surface for this solution is divided into three distinct vectors:
-* **Public P2P Interface (Port 9000):** This is your largest exposure. To participate in the Ethereum network, the node must be reachable by untrusted peers globally.
-* **The Supply Chain:** This includes the Docker images (`chainsafe/lodestar`, `tailscale/tailscale`), the Terraform providers, and the GitHub Actions runner.
-* **Azure Infrastructure Plane:** The Azure Portal/CLI access and the Storage Account keys. If the storage key is leaked, the Tailscale identity can be cloned, granting an attacker access to your private mesh network.
+### Security Risk Assessment (Dark Node Architecture)
+
+The attack surface is now primarily shifted from **Inbound Network Attacks** to **Outbound/Supply Chain Risks**. The exposure is divided into three vectors:
+
+* **The Trusted Proxy (Internal Loopback):** The Lodestar Prover is now a "Man-in-the-Middle" between your wallet and the light client. If this process is compromised, it could return fraudulent transaction data.
+* **The Supply Chain (Container Group):** With three containers (`lodestar`, `prover`, `tailscale`) sharing a single network namespace and disk mount, a vulnerability in any one image can compromise the entire group.
+* **Outbound Data Leakage:** While peers cannot find you, your node still connects to them. This leaks your Azure Instance's existence and metadata to the global Ethereum DHT.
 
 ---
 
 ### Potential Attack Scenarios
 
-#### A. Eclipse Attacks (P2P Level)
-An attacker could attempt to surround your light node with malicious peers. By controlling all the nodes your light client connects to, they could feed you a dishonest version of the blockchain (e.g., hiding transactions or showing a stale state).
+#### A. Eclipse Attacks (Outbound)
+Even without a public IP, your node must "reach out" to find peers. An attacker who controls a large number of nodes could still attempt to "eclipse" your light client if you happen to connect exclusively to their malicious nodes. Without a public ENR for others to find you, you rely entirely on your node's ability to pick "honest" peers from the bootstrap list.
 
-#### B. Resource Exhaustion / DoS
-Because Port 9000 is open to the public, an attacker could flood the node with malformed discovery packets or high-volume connection requests. Given the low resource allocation ($0.5$ CPU, $1.0$ GB RAM), the ACI instance is highly susceptible to CPU pinning or OOM (Out of Memory) crashes.
+#### B. The "Internal Pivot" (Sidecar Escape)
+Since all three containers share the same **localhost** and **File Share**, they are in the same trust zone. If the Prover Proxy (which talks to an untrusted external Execution RPC like Infura) is exploited, an attacker could pivot to the Tailscale container to access your private mesh network or manipulate the Lodestar client's state.
 
-#### C. Sidecar Escape or Data Exfiltration
-If a vulnerability is found in the Lodestar binary, an attacker could theoretically compromise that container. From there, they might attempt to "hop" to the Tailscale container (since they share a network namespace) to intercept private traffic or access the shared Azure File Share to steal the Tailscale state keys.
+#### C. Credential/Identity Cloning
+If your Azure Storage Account keys are leaked, an attacker can download the `tailscale-state` from the file share. They could then impersonate your node on your private Tailnet, potentially intercepting your wallet's transactions or gaining access to other devices in your mesh.
 
 ---
 
 ### Risk Mitigation Strategy
 
-To harden this setup, the following "Defense in Depth" measures are recommended:
+To harden this "Dark" setup, we implement a **Zero-Trust Sidecar** strategy:
 
-### Infrastructure Hardening
-* **Storage Account Firewalls:** Restrict the Storage Account so it only accepts traffic from the ACI's specific subnet or identity. Do not leave it open to "All Networks."
-* **Use Managed Identities:** Instead of using the Storage Account Access Key in your Terraform (which is a "root" password for your data), configure ACI to use a **User-Assigned Managed Identity** to mount the file share.
-* **Resource Quotas:** Consider bumping the memory to $2.0$ GB. Light clients are efficient, but during high network turbulence, memory spikes are common; a crash during a sync can lead to state corruption.
+### 1. Infrastructure & Storage Hardening
+* **Storage Firewalls:** Configure the Storage Account to **"Enabled from selected virtual networks and IP addresses."** Since we are not using a VNet, restrict access to the specific Azure Service Principal or use **Private Endpoints** if budget allows later.
+* **Managed Identities:** Avoid using Storage Access Keys in the Terraform code. Use a **System-Assigned Managed Identity** for the ACI to authenticate to the File Share.
+* **Disk Isolation:** If possible, use separate sub-folders or separate File Shares for Lodestar data and Tailscale state to prevent a compromised container from accessing all persistent data.
 
-### Network & Sidecar Security
-* **Tailscale ACLs:** Within the Tailscale admin console, implement **Tags** and **ACLs**. Ensure that the node can only *receive* traffic on port 9596 and cannot initiate connections to other sensitive devices on your Tailnet.
-* **P2P Peer Limits:** Explicitly set `--maxPeers` in your Lodestar command. For a light node, $20–30$ peers is usually sufficient and prevents the container from being overwhelmed.
+### 2. Network & Proxy Security
+* **Localhost Binding:** Explicitly bind the Lodestar REST API (`--rest.address 127.0.0.1`) and the Prover Proxy to loopback. This ensures that even if an Azure networking error occurred, these ports are never reachable outside the container group.
+* **Tailscale ACLs (Identity-Based):** In the Tailscale console, use **Tags** (e.g., `tag:eth-node`). Set an ACL rule that allows `YOUR_USER` to access `tag:eth-node` on **Port 8080 only**. The node should have no permission to initiate traffic to any other device on your Tailnet.
+* **Prover Verification:** Always verify the `infura_url` (Execution Layer) is using **HTTPS** to prevent MITM attacks on the data the Prover is trying to verify.
 
-### Supply Chain Security
-* **Image Pinning:** Instead of using `:latest`, pin your Docker images to specific hashes (SHA256). This prevents an "upstream" compromise of the image repository from automatically deploying malicious code to your Azure environment.
-* **OIDC for GitHub Actions:** Stop using long-lived Azure Service Principal secrets. Switch to **OpenID Connect (OIDC)** to allow GitHub to authenticate to Azure via a short-lived, passwordless token.
+### 3. Supply Chain & Lifecycle
+* **Image Pinning (SHA256):** Do not use `:latest`. Pin `chainsafe/lodestar` and `tailscale/tailscale` to specific digest hashes. This ensures that a compromise of the Docker Hub repository does not automatically infect your node.
+* **OIDC Authentication:** Transition GitHub Actions to use **Workload Identity Federation (OIDC)**. This removes the need to store long-lived `AZURE_CLIENT_SECRET` in GitHub, using short-lived tokens for each deployment instead.
+* **Resource Balancing:** Allocate at least **2.5 GB RAM** to the container group. Running three processes (Lodestar, Prover, and Tailscale) creates higher memory pressure; a "Dark Node" that crashes frequently is more vulnerable to state corruption during resync.
 
 
 ## Detailed implementation steps
