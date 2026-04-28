@@ -72,79 +72,15 @@ graph TD
 
 This configuration uses a Multi-Container Group. Lodestar runs the node, and Tailscale provides the secure tunnel for a remote connection. Azure Files is utilized to persist the node state and Tailscale's identity.
 
-```Terraform
-# main.tf (Updated with VNet and NSG)
+```terraform
+# main.tf (Updated for Dark Node Architecture)
 
 resource "azurerm_resource_group" "eth_node" {
   name     = "rg-lodestar-node"
   location = var.location
 }
 
-# 1. Network: Virtual Network & Subnet
-resource "azurerm_virtual_network" "vnet" {
-  name                = "vnet-lodestar"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.eth_node.location
-  resource_group_name = azurerm_resource_group.eth_node.name
-}
-
-resource "azurerm_subnet" "aci_subnet" {
-  name                 = "snet-aci"
-  resource_group_name  = azurerm_resource_group.eth_node.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.1.0/24"]
-
-  # Required for ACI injection into a VNet
-  delegation {
-    name = "aci-delegation"
-    service_delegation {
-      name    = "Microsoft.ContainerInstance/containerGroups"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    }
-  }
-}
-
-# 2. Security: Network Security Group (NSG)
-resource "azurerm_network_security_group" "aci_nsg" {
-  name                = "nsg-lodestar-aci"
-  location            = azurerm_resource_group.eth_node.location
-  resource_group_name = azurerm_resource_group.eth_node.name
-
-  # Allow Ethereum P2P (TCP)
-  security_rule {
-    name                       = "AllowP2P_TCP"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "9000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  # Allow Ethereum P2P (UDP)
-  security_rule {
-    name                       = "AllowP2P_UDP"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Udp"
-    source_port_range          = "*"
-    destination_port_range     = "9000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  # Note: Port 9596 is NOT opened here. Tailscale handles it internally.
-}
-
-resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
-  subnet_id                 = azurerm_subnet.aci_subnet.id
-  network_security_group_id = azurerm_network_security_group.aci_nsg.id
-}
-
-# 3. Storage (Unchanged logic, added for completeness)
+# 1. Storage (Persistent data for Lodestar and Tailscale state)
 resource "azurerm_storage_account" "storage" {
   name                     = "stlodestardata${random_string.suffix.result}"
   resource_group_name      = azurerm_resource_group.eth_node.name
@@ -156,41 +92,37 @@ resource "azurerm_storage_account" "storage" {
 resource "azurerm_storage_share" "lodestar_share" {
   name                 = "lodestar-data"
   storage_account_name = azurerm_storage_account.storage.name
-  quota                = 5
+  quota                = 10
 }
 
-# 4. Container Group (Updated for VNet)
+# 2. Container Group (Dark Node - No VNet, No Public IP)
 resource "azurerm_container_group" "node_group" {
-  name                = "lodestar-light-node"
+  name                = "lodestar-dark-node"
   location            = azurerm_resource_group.eth_node.location
   resource_group_name = azurerm_resource_group.eth_node.name
   os_type             = "Linux"
-  
-  # Set to Private for VNet injection
-  ip_address_type     = "Private"
-  subnet_ids          = [azurerm_subnet.aci_subnet.id]
 
+  # "None" removes the public IP entirely. 
+  # Note: ACI still has outbound internet access via platform NAT for peer syncing.
+  ip_address_type     = "None"
+
+  # Lodestar Light Client Container
   container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
-    cpu    = "1"
-    memory = "2.0"
+    cpu    = "0.5"
+    memory = "1.5"
 
     commands = [
       "node", "light-client",
       "--network", "sepolia",
       "--checkpointSyncUrl", "https://checkpoint-sync.sepolia.ethpandaops.io/",
       "--rest",
-      "--rest.address", "0.0.0.0",
+      "--rest.address", "127.0.0.1", # Only listen to internal sidecars
       "--rest.port", "9596",
       "--rootDir", "/data"
     ]
 
-    ports {
-      port     = 9000
-      protocol = "TCP"
-    }
-    
     volume {
       name                 = "lodestar-storage"
       mount_path           = "/data"
@@ -200,15 +132,34 @@ resource "azurerm_container_group" "node_group" {
     }
   }
 
+  # Lodestar Prover Proxy (Allows MetaMask to connect)
+  container {
+    name   = "prover"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+
+    commands = [
+      "prover", "proxy",
+      "--network", "sepolia",
+      "--beaconUrls", "http://127.0.0.1:9596",
+      "--executionRpcUrl", var.infura_url, # Untrusted data source to be verified
+      "--port", "8080",
+      "--address", "0.0.0.0" # Accessible to Tailscale via localhost/shared namespace
+    ]
+  }
+
+  # Tailscale Sidecar (The secure entry point)
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
     cpu    = "0.5"
-    memory = "1"
+    memory = "0.5"
 
     environment_variables = {
       TS_AUTHKEY   = var.tailscale_key
       TS_STATE_DIR = "/var/lib/tailscale"
+      TS_EXTRA_ARGS = "--hostname=eth-light-node"
     }
 
     volume {
@@ -226,6 +177,18 @@ resource "random_string" "suffix" {
   special = false
   upper   = false
 }
+
+variable "infura_url" {
+  description = "The untrusted Execution Layer RPC URL (Infura/Alchemy)"
+  type        = string
+}
+
+variable "tailscale_key" {
+  description = "Tailscale Auth Key"
+  type        = string
+  sensitive   = true
+}
+
 ```
 
 ### GitHub Actions Workflow (deploy.yml)
