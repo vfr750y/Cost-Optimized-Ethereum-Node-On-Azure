@@ -60,17 +60,14 @@ The user and the wallet creates a signed request which is sent to the light node
 
 
 ## Basic high level components
-- Metamask Wallet
-- GitHub repository for .tf files
-- GitHub Actions workflow file (.yml) : defines the actions that perform the Terraform workflow.
-- GitHub secrets : Storing the Azure Service Principle details.
-- Terraform account : Terraform will check the code against the state file, prepare the deployment and push the changes to Azure.
-- Azure subscription 
-- Azure Entra ID service principle : to allow GitHub to run the Terraform code.
-- Azure storage account : Keeps the Terraform state file.
-- Azure container instance (Linux)
-- Azure file share : Persistent storage for the Azure container.
-- Lodestar light client (running in the Azure Container Instance)
+
+- MetaMask/Rabby Wallet: The user interface for signing transactions.
+- Azure Container Instance (ACI): The serverless compute host.
+- Lodestar Light Client: The consensus-layer node.
+- Lodestar Prover Proxy: The "bridge" that allows wallets to talk to the light client.
+- Tailscale Sidecar: Provides the secure, private entry point (No Public IP needed).
+- Azure File Share: Persistent storage for the node's database.
+- Infura/Alchemy (Optional): Used as an untrusted data source by the Prover (verified by your node).
 
 ## System Architecture Diagram (Physical/Cloud)
 
