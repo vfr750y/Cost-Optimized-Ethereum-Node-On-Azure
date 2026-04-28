@@ -239,6 +239,7 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve \
           -var="tailscale_key=${{ secrets.TAILSCALE_KEY }}"
+          -var="infura_url=${{ secrets.INFURA_URL }}"
 ```
 
 ### GitHub Repository Structure
