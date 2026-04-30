@@ -37,6 +37,35 @@ This project leverages **Azure Container Instances (ACI)** to provide a serverle
 * **Lodestar Optimized:** Uses the TypeScript-based Lodestar client, specifically tuned for low-memory environments like containers.
 * **Privacy First:** Traffic remains within your private Tailscale network, invisible to the public internet and protected from ISP/Cloud provider snooping.
 
+```mermaid
+graph TB
+    subgraph Client_Env [Local Environment]
+        Wallet((MetaMask))
+        TS_App[Tailscale Client]
+    end
+
+    subgraph Azure ["Azure Subscription (No VNet/No NSG)"]
+        direction TB
+        
+        subgraph ACI_Group ["ACI Container Group (Public IP: None)"]
+            direction LR
+            Lodestar["Lodestar Light Client"]
+            Prover["Lodestar Prover"]
+            Tailscale["Tailscale Sidecar"]
+        end
+
+        FS[("Azure File Share: Persistent Data")]
+    end
+
+    %% Networking
+    Wallet --> TS_App
+    TS_App == "WireGuard Tunnel" ==> Tailscale
+    Tailscale -. "Localhost" .-> Prover
+    Prover -. "Localhost" .-> Lodestar
+    Lodestar -- "Outbound Only" --> Eth_Network((Ethereum P2P))
+    Lodestar -- "Mount" --> FS
+```
+
 ## 🌟 Business Value & Key Features
 *   **Cost Reduction:** Leverage Azure's B-Series VMs and Light Node sync modes to cut costs by 60-80%.
 *   **Infrastructure as Code (IaC):** 100% automated deployment via Terraform—no manual configuration errors.
