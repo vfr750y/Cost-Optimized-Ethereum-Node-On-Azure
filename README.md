@@ -15,7 +15,7 @@ This project leverages **Azure Container Instances (ACI)** to provide a serverle
 | :------------------------ | :-------------------- | :----------- | :----------------------- | :----------- |
 | **Compute (vCPU)**        | 0.85 vCPU Total       | ~$30.15      | 1.75 vCPU Total          | ~$62.10      |
 | **Memory (RAM)**          | 1.6 GiB Total         | ~$6.30       | 3.5 GiB Total            | ~$13.80      |
-| **Storage (Azure Files)** | 50 GB Standard Hot    | ~$1.00       | 100 GB Standard Hot      | ~$2.00       |
+| **Storage (Azure Files)** | 32 GB Standard Hot    | ~$5          | 32 GB Standard Hot       | ~$5          |
 | **Networking**            | Private VNet + Tailscale | $0.00     | Private VNet + Tailscale | $0.00        |
 | **Estimated Total**       | **Daily: ~$1.25**     | **$37.45**   | **Daily: ~$2.60**        | **$77.90**   |
 
