@@ -69,12 +69,10 @@ I specialize in helping Enterprises scale their infrastructure while minimizing 
 This project deploys an Ethererum node on Azure using version control (GitHub) to manage the development and Infrastructure as Code (Terraform) to deploy and configure the relevant Azure resources. Building an Ethereum node on Azure invoives connecting a compute resource with the node software installed and running on it to the internet and the Ethereum node mesh. Additionally a secure private connection is required for administration.A full node has 2 core components to install, the execution client and the consensus client. There are also 2 sets of network ports to consider, the external Peer-to-Peer (P2P) ports and the internal admin ports. The main constraints for the project are costs and security.
  
 ### Costs
-The budget for this project is restricted, so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them. If it's not feasible to do a full node then there are a couple of other node types to consider that might be more feasible. A Sepolia test node is also going to be cheaper than a full node. I'll compare standard VM vs Containerisation.
-
-Initial estimate
+The budget for this project is restricted, so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them. If it's not feasible to do a full node then there are a couple of other node types to consider that might be more feasible. A Sepolia test node is also going to be cheaper than a full node. I'll compare standard VM vs Containerisation and also to get an idea of the costs for data ingress and egress. 
 
 ### Security
-I need to make sure that the system is secure. I'm thinking of using a basic VNET with Network Security Group (NSG) network architecture. I want to take a look at the network ports that are required and also to get an idea of the costs for data ingress and egress. 
+I need to make sure that the system is secure. I'll analyse the the network ports that are required and how best to secure the compute environment from the internet and to provide a secure and private admin connection. 
 
 ## Project stages
 The following are the basic stages for this project.
