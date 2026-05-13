@@ -488,6 +488,9 @@ Here are the updated implementation steps for your **Low Level Design (LLD)**.
 ### Phase 1: Bootstrapping & Identity
 Build the Terraform management plane.
 
+#### Step 0 Open an Azure cloud shell
+Log into the azure portal
+
 #### Step 1.0: Create the Target Resource Group
 ```bash
 RG_NAME="rg-lodestar-node"
