@@ -490,6 +490,8 @@ Build the Terraform management plane.
 
 #### Step 0 Open an Azure cloud shell
 Log into the azure portal
+Click on the >_ icon in the portal
+Choose Bash
 
 #### Step 1.0: Create the Target Resource Group
 ```bash
