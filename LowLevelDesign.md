@@ -499,7 +499,7 @@ az group create --name $RG_NAME --location $LOCATION
 ```bash
 az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
   --scopes /subscriptions/{subscription-id}/resourceGroups/rg-lodestar-node \
-  --sdk-auth
+  --json-auth
 ```
 
 #### Step 1.2: Terraform Backend Setup
