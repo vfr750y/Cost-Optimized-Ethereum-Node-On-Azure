@@ -1,5 +1,4 @@
 # main.tf (Finalized Dark Node Architecture)
-
 variable "location" {
   default = "australiaeast"
 }
