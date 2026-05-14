@@ -53,6 +53,59 @@ resource "azurerm_container_group" "node_group" {
   os_type             = "Linux"
   ip_address_type     = "None" # No Public IP
 
+  # --- Lodestar Light Client ---
+  container {
+    name   = "lodestar"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.5"
+
+    ports {
+      port     = 9596
+      protocol = "TCP"
+    }
+
+    commands = [
+      "node", "light-client",
+      "--network", "sepolia",
+      "--checkpointSyncUrl", "https://checkpoint-sync.sepolia.ethpandaops.io/",
+      "--rest",
+      "--rest.address", "127.0.0.1", # Internal only
+      "--rest.port", "9596",
+      "--rootDir", "/data"
+    ]
+
+    volume {
+      name                 = "lodestar-storage"
+      mount_path           = "/data"
+      share_name           = azurerm_storage_share.lodestar_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
+  }
+
+  # --- Lodestar Prover Proxy ---
+  container {
+    name   = "prover"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+
+    ports {
+      port     = 8080
+      protocol = "TCP"
+    }
+
+    commands = [
+      "node", "prover", "proxy",
+      "--network", "sepolia",
+      "--beaconUrls", "http://127.0.0.1:9596",
+      "--executionRpcUrl", var.infura_url,
+      "--port", "8080",
+      "--address", "0.0.0.0" # Accessible to Tailscale on localhost
+    ]
+  }
+  
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
