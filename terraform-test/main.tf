@@ -3,6 +3,12 @@ variable "location" {
   default = "australiaeast"
 }
 
+variable "tailscale_key" {
+  description = "Tailscale Auth Key"
+  type        = string
+  sensitive   = true
+}
+
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
@@ -41,4 +47,26 @@ resource "azurerm_container_group" "node_group" {
   resource_group_name = data.azurerm_resource_group.eth_node.name
   os_type             = "Linux"
   ip_address_type     = "None" # No Public IP
+
+  container {
+    name   = "tailscale"
+    image  = "tailscale/tailscale:latest"
+    cpu    = "0.5"
+    memory = "0.5"
+
+    environment_variables = {
+      TS_AUTHKEY    = var.tailscale_key
+      TS_STATE_DIR  = "/var/lib/tailscale"
+      TS_USERSPACE  = "true" # Mandatory for ACI
+      TS_EXTRA_ARGS = "--hostname=eth-light-node --accept-dns=false"
+    }
+
+    volume {
+      name                 = "tailscale-state"
+      mount_path           = "/var/lib/tailscale"
+      share_name           = azurerm_storage_share.tailscale_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
+  }
 }
