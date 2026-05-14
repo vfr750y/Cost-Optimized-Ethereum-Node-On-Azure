@@ -4,6 +4,17 @@ variable "location" {
   default = "australiaeast"
 }
 
+variable "infura_url" {
+  description = "Execution Layer RPC URL (Infura/Alchemy)"
+  type        = string
+}
+
+variable "tailscale_key" {
+  description = "Tailscale Auth Key"
+  type        = string
+  sensitive   = true
+}
+
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
@@ -31,4 +42,15 @@ resource "azurerm_storage_share" "tailscale_share" {
   name                 = "tailscale-state"
   storage_account_name = azurerm_storage_account.storage.name
   quota                = 1
+}
+
+# ---------------------------------------------------------
+# 2. Container Group (The Dark Node)
+# ---------------------------------------------------------
+resource "azurerm_container_group" "node_group" {
+  name                = "lodestar-dark-node"
+  location            = data.azurerm_resource_group.eth_node.location
+  resource_group_name = data.azurerm_resource_group.eth_node.name
+  os_type             = "Linux"
+  ip_address_type     = "None" # No Public IP
 }
