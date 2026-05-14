@@ -9,6 +9,11 @@ variable "tailscale_key" {
   sensitive   = true
 }
 
+variable "infura_url" {
+  description = "Execution Layer RPC URL (Infura/Alchemy)"
+  type        = string
+}
+
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
