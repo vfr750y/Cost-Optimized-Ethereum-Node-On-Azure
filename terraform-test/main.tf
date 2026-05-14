@@ -65,15 +65,19 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-    commands = [
-      "node", "light-client",
-      "--network", "sepolia",
-      "--checkpointSyncUrl", "https://checkpoint-sync.sepolia.ethpandaops.io/",
-      "--rest",
-      "--rest.address", "127.0.0.1", # Internal only
-      "--rest.port", "9596",
-      "--rootDir", "/data"
-    ]
+    security {
+      privileged = false
+      run_as_user = 0  # Run as root
+  }
+
+  commands = [
+    "lodestar", "lightclient",
+    "--network", "sepolia",
+    "--beaconApiUrl", "https://lodestar-sepolia.chainsafe.io",
+    "--checkpointRoot", "0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229",
+    "--dataDir", "/data",
+    "--logLevel", "debug"
+  ]
 
     volume {
       name                 = "lodestar-storage"
@@ -85,27 +89,33 @@ resource "azurerm_container_group" "node_group" {
   }
 
   # --- Lodestar Prover Proxy ---
-  container {
-    name   = "prover"
-    image  = "chainsafe/lodestar:latest"
-    cpu    = "0.5"
-    memory = "1.0"
-
-    ports {
-      port     = 8080
-      protocol = "TCP"
-    }
-
-    commands = [
-      "node", "prover", "proxy",
-      "--network", "sepolia",
-      "--beaconUrls", "http://127.0.0.1:9596",
-      "--executionRpcUrl", var.infura_url,
-      "--port", "8080",
-      "--address", "0.0.0.0" # Accessible to Tailscale on localhost
-    ]
-  }
+container {
+  name   = "prover"
+  image  = "chainsafe/lodestar:latest"
+  cpu    = "0.5"
+  memory = "1.0"
   
+  ports {
+    port     = 8080
+    protocol = "TCP"
+  }
+
+  security {
+    privileged = false
+    run_as_user = 0  # Run as root
+  }
+
+  commands = [
+    "lodestar", "prover", "proxy",
+    "--network", "sepolia",
+    "--executionRpcUrl", var.infura_url,
+    "--beaconUrls", "http://127.0.0.1:9596",
+    "--port", "8080",
+    "--address", "0.0.0.0",
+    "--logLevel", "debug"
+  ]
+}
+
   container {
     name   = "tailscale"
     image  = "tailscale/tailscale:latest"
