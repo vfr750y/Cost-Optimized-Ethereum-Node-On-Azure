@@ -27,15 +27,15 @@ jobs:
       run: terraform init
       working-directory: ./terraform-test
 
-#    - name: Terraform Plan
-#      run: terraform plan
-#      working-directory: ./terraform-test
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: ./terraform-test
 
-#    - name: Terraform Apply
-#      run: terraform apply -auto-approve
-#      working-directory: ./terraform-test
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform-test
 
       # Add the Destroy step
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
-      working-directory: ./terraform-test
+#    - name: Terraform Destroy
+#      run: terraform destroy -auto-approve
+#      working-directory: ./terraform-test
