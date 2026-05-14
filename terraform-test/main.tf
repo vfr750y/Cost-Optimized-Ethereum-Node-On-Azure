@@ -18,3 +18,17 @@ resource "azurerm_storage_account" "storage" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
+# Separate share for Ethereum chain data
+resource "azurerm_storage_share" "lodestar_share" {
+  name                 = "lodestar-data"
+  storage_account_name = data.azurerm_storage_account.storage.name
+  quota                = 10
+}
+
+# Separate share for Tailscale state (identity/keys)
+resource "azurerm_storage_share" "tailscale_share" {
+  name                 = "tailscale-state"
+  storage_account_name = data.azurerm_storage_account.storage.name
+  quota                = 1
+}
