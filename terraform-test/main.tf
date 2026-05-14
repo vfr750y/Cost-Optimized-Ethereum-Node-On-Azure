@@ -4,17 +4,6 @@ variable "location" {
   default = "australiaeast"
 }
 
-variable "infura_url" {
-  description = "Execution Layer RPC URL (Infura/Alchemy)"
-  type        = string
-}
-
-variable "tailscale_key" {
-  description = "Tailscale Auth Key"
-  type        = string
-  sensitive   = true
-}
-
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
