@@ -59,16 +59,12 @@ resource "azurerm_container_group" "node_group" {
     image  = "chainsafe/lodestar:latest"
     cpu    = "0.5"
     memory = "1.5"
+    run_as_user = 0
 
     ports {
       port     = 9596
       protocol = "TCP"
     }
-
-    security {
-      privileged = false
-      run_as_user = 0  # Run as root
-  }
 
   commands = [
     "lodestar", "lightclient",
@@ -94,15 +90,11 @@ container {
   image  = "chainsafe/lodestar:latest"
   cpu    = "0.5"
   memory = "1.0"
+  run_as_user = 0
   
   ports {
     port     = 8080
     protocol = "TCP"
-  }
-
-  security {
-    privileged = false
-    run_as_user = 0  # Run as root
   }
 
   commands = [
