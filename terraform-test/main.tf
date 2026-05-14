@@ -65,10 +65,10 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-    commands = [
-      "sh", "-c",
-      "if [ $(id -u) -ne 0 ]; then exec sudo -E lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug; else exec lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug; fi"
-    ]
+commands = [
+  "/bin/sh", "-c",
+  "/usr/local/bin/node /usr/local/lib/node_modules/@chainsafe/lodestar-cli/bin/lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug"
+]
 
     volume {
       name                 = "lodestar-storage"
@@ -91,10 +91,10 @@ container {
     protocol = "TCP"
   }
 
-    commands = [
-      "sh", "-c",
-      "if [ $(id -u) -ne 0 ]; then exec sudo -E lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug; else exec lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug; fi"
-    ]
+commands = [
+  "/bin/sh", "-c",
+  "/usr/local/bin/node /usr/local/lib/node_modules/@chainsafe/lodestar-cli/bin/lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug"
+]
 
 }
 
