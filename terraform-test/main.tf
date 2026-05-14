@@ -1,4 +1,4 @@
-# main.tf (Finalized Dark Node Architecture)
+# main.tf (Finalized Ethereum Node Architecture)
 variable "location" {
   default = "australiaeast"
 }
@@ -44,10 +44,10 @@ resource "azurerm_storage_share" "tailscale_share" {
 }
 
 # ---------------------------------------------------------
-# 2. Container Group (The Dark Node)
+# 2. Container Group (The Lodestar Light Node)
 # ---------------------------------------------------------
 resource "azurerm_container_group" "node_group" {
-  name                = "lodestar-dark-node"
+  name                = "lodestar-light-node"
   location            = data.azurerm_resource_group.eth_node.location
   resource_group_name = data.azurerm_resource_group.eth_node.name
   os_type             = "Linux"
@@ -59,21 +59,16 @@ resource "azurerm_container_group" "node_group" {
     image  = "chainsafe/lodestar:latest"
     cpu    = "0.5"
     memory = "1.5"
-    run_as_user = 0
 
     ports {
       port     = 9596
       protocol = "TCP"
     }
 
-  commands = [
-    "lodestar", "lightclient",
-    "--network", "sepolia",
-    "--beaconApiUrl", "https://lodestar-sepolia.chainsafe.io",
-    "--checkpointRoot", "0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229",
-    "--dataDir", "/data",
-    "--logLevel", "debug"
-  ]
+    commands = [
+      "sh", "-c",
+      "if [ $(id -u) -ne 0 ]; then exec sudo -E lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug; else exec lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug; fi"
+    ]
 
     volume {
       name                 = "lodestar-storage"
@@ -90,22 +85,17 @@ container {
   image  = "chainsafe/lodestar:latest"
   cpu    = "0.5"
   memory = "1.0"
-  run_as_user = 0
   
   ports {
     port     = 8080
     protocol = "TCP"
   }
 
-  commands = [
-    "lodestar", "prover", "proxy",
-    "--network", "sepolia",
-    "--executionRpcUrl", var.infura_url,
-    "--beaconUrls", "http://127.0.0.1:9596",
-    "--port", "8080",
-    "--address", "0.0.0.0",
-    "--logLevel", "debug"
-  ]
+    commands = [
+      "sh", "-c",
+      "if [ $(id -u) -ne 0 ]; then exec sudo -E lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug; else exec lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug; fi"
+    ]
+
 }
 
   container {
