@@ -65,14 +65,10 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-   security {
-    privileged = false
-    run_as_user = 0            # <-- Forces the container to run as root
-  }
 
 commands = [
   "/bin/sh", "-c",
-  "/usr/local/bin/node /usr/local/lib/node_modules/@chainsafe/lodestar-cli/bin/lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug"
+  "lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug > /tmp/lodestar.log 2>&1 && cat /tmp/lodestar.log"
 ]
 
     volume {
