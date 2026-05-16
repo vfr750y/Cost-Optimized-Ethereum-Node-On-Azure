@@ -17,6 +17,7 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       TF_VAR_tailscale_key: ${{ secrets.TAILSCALE_KEY }}
       TF_VAR_infura_url: ${{ secrets.INFURA_URL }}
+      TF_VAR_log_analytics_workspace: ${{secrets.LOG_ANALYTICS_WORKSPACE}}
 
     steps:
     - name: Checkout Code
@@ -29,15 +30,15 @@ jobs:
       run: terraform init
       working-directory: ./terraform-test
 
-#    - name: Terraform Plan
-#      run: terraform plan
-#      working-directory: ./terraform-test
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: ./terraform-test
 
-#    - name: Terraform Apply
-#      run: terraform apply -auto-approve
-#      working-directory: ./terraform-test
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform-test
 
       # Add the Destroy step
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
-      working-directory: ./terraform-test
+#    - name: Terraform Destroy
+#      run: terraform destroy -auto-approve
+#      working-directory: ./terraform-test

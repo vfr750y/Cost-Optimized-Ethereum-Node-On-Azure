@@ -14,9 +14,22 @@ variable "infura_url" {
   type        = string
 }
 
+variable "log_analytics_workspace" {
+  description = "Log analytics workspace for container logging"
+  type = string
+}
+
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
+
+data "azurerm_log_analytics_workspace" "lodestar_logs" { 
+  name = var.log_analytics_workspace
+  resource_group_name = data.azurerm_resource_group.eth_node.name }
+
+data "azurerm_log_analytics_workspace_shared_keys" "lodestar_logs" { 
+resource_group_name = data.azurerm_log_analytics_workspace.lodestar_logs.resource_group_name 
+workspace_name = data.azurerm_log_analytics_workspace.lodestar_logs.name }
 
 # ---------------------------------------------------------
 # 1. Storage Configuration
@@ -52,6 +65,13 @@ resource "azurerm_container_group" "node_group" {
   resource_group_name = data.azurerm_resource_group.eth_node.name
   os_type             = "Linux"
   ip_address_type     = "None" # No Public IP
+  restart_policy = "Always"
+  diagnostics { 
+    log_analytics {
+      workspace_id = data.azurerm_log_analytics_workspace.lodestar_logs.workspace_id 
+      workspace_key = data.azurerm_log_analytics_workspace_shared_keys.lodestar_logs.primary_shared_key 
+    } 
+  }
 
   # --- Lodestar Light Client ---
   container {
@@ -67,8 +87,20 @@ resource "azurerm_container_group" "node_group" {
 
 
 commands = [
-  "/bin/sh", "-c",
-  "/usr/local/bin/lodestar lightclient --network sepolia --beaconApiUrl https://lodestar-sepolia.chainsafe.io --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 --dataDir /data --logLevel debug"
+  "/bin/sh",
+  "-c",
+  <<-EOT
+    lodestar lightclient \
+      --network sepolia \
+      --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
+      --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 \
+      --dataDir /data \
+      --logLevel info \
+      --rest \
+      --rest.address 0.0.0.0 \
+      --rest.port 9596 \
+      --persistNetworkIdentity false
+  EOT
 ]
 
     volume {
@@ -81,23 +113,23 @@ commands = [
   }
 
   # --- Lodestar Prover Proxy ---
-container {
-  name   = "prover"
-  image  = "chainsafe/lodestar:latest"
-  cpu    = "0.5"
-  memory = "1.0"
-  
-  ports {
-    port     = 8080
-    protocol = "TCP"
-  }
+# container {
+#  name   = "prover"
+#  image  = "chainsafe/lodestar:latest"
+#  cpu    = "0.5"
+#  memory = "1.0"
+#  
+#  ports {
+#    port     = 8080
+#    protocol = "TCP"
+#  }
 
-commands = [
-  "/bin/sh", "-c",
-  "/usr/local/bin/lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug"
-]
+#commands = [
+#  "/bin/sh", "-c",
+#  "/usr/local/bin/lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug"
+#]
 
-}
+#}
 
   container {
     name   = "tailscale"
