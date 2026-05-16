@@ -25,11 +25,13 @@ data "azurerm_resource_group" "eth_node" {
 
 data "azurerm_log_analytics_workspace" "lodestar_logs" { 
   name = var.log_analytics_workspace
-  resource_group_name = data.azurerm_resource_group.eth_node.name }
+  resource_group_name = data.azurerm_resource_group.eth_node.name 
+}
 
 data "azurerm_log_analytics_workspace_shared_keys" "lodestar_logs" { 
-resource_group_name = data.azurerm_log_analytics_workspace.lodestar_logs.resource_group_name 
-workspace_name = data.azurerm_log_analytics_workspace.lodestar_logs.name }
+  resource_group_name = data.azurerm_log_analytics_workspace.lodestar_logs.resource_group_name 
+  workspace_name = data.azurerm_log_analytics_workspace.lodestar_logs.name 
+}
 
 # ---------------------------------------------------------
 # 1. Storage Configuration
