@@ -67,7 +67,7 @@ resource "azurerm_container_group" "node_group" {
   diagnostics { 
     log_analytics { 
       workspace_id = data.azurerm_log_analytics_workspace.lodestar_logs.workspace_id 
-      workspace_key = data.azurerm_log_analytics_workspace_shared_keys.lodestar_logs.primary_shared_key 
+      workspace_key = data.azurerm_log_analytics_workspace.lodestar_logs.primary_shared_key 
     } 
   }
 
