@@ -83,23 +83,27 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-
 commands = [
-  "/bin/sh",
-  "-c",
-  <<-EOT
-    /usr/local/bin/lodestar lightclient \
-      --network sepolia \
-      --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
-      --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 \
-      --dataDir /data \
-      --logLevel info \
-      --rest \
-      --rest.address 0.0.0.0 \
-      --rest.port 9596 \
-      --persistNetworkIdentity false
-  EOT
+  "/bin/sh", "-c", 
+  "find / -name lodestar 2>/dev/null && find / -name '*.js' 2>/dev/null | grep lodestar && sleep 3600" 
 ]
+
+#commands = [
+#  "/bin/sh",
+#  "-c",
+#  <<-EOT
+#    /usr/local/bin/lodestar lightclient \
+#      --network sepolia \
+#      --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
+#      --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 \
+#      --dataDir /data \
+#      --logLevel info \
+#      --rest \
+#      --rest.address 0.0.0.0 \
+#      --rest.port 9596 \
+#      --persistNetworkIdentity false
+#  EOT
+#]
 
     volume {
       name                 = "lodestar-storage"
