@@ -28,10 +28,6 @@ data "azurerm_log_analytics_workspace" "lodestar_logs" {
   resource_group_name = data.azurerm_resource_group.eth_node.name 
 }
 
-data "azurerm_log_analytics_workspace_shared_keys" "lodestar_logs" { 
-  resource_group_name = data.azurerm_log_analytics_workspace.lodestar_logs.resource_group_name 
-  workspace_name = data.azurerm_log_analytics_workspace.lodestar_logs.name 
-}
 
 # ---------------------------------------------------------
 # 1. Storage Configuration
@@ -69,7 +65,7 @@ resource "azurerm_container_group" "node_group" {
   ip_address_type     = "None" # No Public IP
   restart_policy = "Always"
   diagnostics { 
-    log_analytics {
+    log_analytics { 
       workspace_id = data.azurerm_log_analytics_workspace.lodestar_logs.workspace_id 
       workspace_key = data.azurerm_log_analytics_workspace_shared_keys.lodestar_logs.primary_shared_key 
     } 
