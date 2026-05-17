@@ -79,18 +79,7 @@ resource "azurerm_container_group" "node_group" {
   }
 
   # --- Lodestar Light Client ---
-container {
-    name   = "lodestar"
-    image  = "chainsafe/lodestar:latest"
-    cpu    = "1.0"
-    memory = "2.0"
-    
-    # Port for internal/external consensus layer interactions
-    ports {
-      port     = 9596
-      protocol = "TCP"
-    }
-# --- Lodestar Light Client ---
+
   container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
@@ -133,15 +122,7 @@ container {
   #        --logLevel info \
   #    EOT
   #  ]
-    
-    volume {
-      name                 = "lodestar-storage"
-      mount_path           = "/data"
-      share_name           = azurerm_storage_share.lodestar_share.name
-      storage_account_name = azurerm_storage_account.storage.name
-      storage_account_key  = azurerm_storage_account.storage.primary_access_key
-    }
-  }
+ 
 
 # --- Lodestar Prover Execution Proxy ---
   container {
