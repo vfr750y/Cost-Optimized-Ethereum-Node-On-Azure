@@ -112,7 +112,7 @@ container {
     }
   }
 
-  # --- Lodestar Prover Execution Proxy ---
+# --- Lodestar Prover Execution Proxy ---
   container {
     name   = "prover"
     image  = "chainsafe/lodestar:latest"
@@ -127,8 +127,10 @@ container {
     commands = [
       "/bin/sh", "-c",
       <<EOT
-        npm install -g @lodestar/prover && \
-        lodestar-prover proxy \
+        echo "Pausing 20 seconds to allow the Lodestar light client to open port 9596..." && \
+        sleep 20 && \
+        echo "Launching Lodestar Prover..." && \
+        npx @lodestar/prover proxy \
         --network sepolia \
         --executionRpcUrl ${var.infura_url} \
         --beaconUrls http://127.0.0.1:9596 \
