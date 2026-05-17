@@ -129,8 +129,8 @@ container {
       <<EOT
         echo "Pausing 20 seconds to allow the Lodestar light client to open port 9596..." && \
         sleep 20 && \
-        echo "Launching Lodestar Prover..." && \
-        npx @lodestar/prover proxy \
+        echo "Launching Built-in Lodestar Prover..." && \
+        node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
         --network sepolia \
         --executionRpcUrl ${var.infura_url} \
         --beaconUrls http://127.0.0.1:9596 \
