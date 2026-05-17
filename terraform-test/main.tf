@@ -19,6 +19,13 @@ variable "log_analytics_workspace" {
   type = string
 }
 
+variable "checkpoint_root" {
+  description = "Block root for recent sepolia checkpoint"
+  type = string
+}
+  
+
+
 data "azurerm_resource_group" "eth_node" {
   name = "rg-lodestar-node"
 }
@@ -72,50 +79,19 @@ resource "azurerm_container_group" "node_group" {
   }
 
   # --- Lodestar Light Client ---
-  container {
+container {
     name   = "lodestar"
     image  = "chainsafe/lodestar:latest"
-    cpu    = "0.5"
-    memory = "1.5"
-
+    cpu    = "1.0"
+    memory = "2.0"
+    
+    # Port for internal/external consensus layer interactions
     ports {
       port     = 9596
       protocol = "TCP"
     }
 
-#commands = [ 
-#  "/bin/sh", "-c", "node /usr/app/packages/cli/bin/lodestar.js lightclient --help && sleep 3600" 
-#]
-
-commands = [ 
-  "/bin/sh", 
-  "-c", 
-  <<-EOT
-    node /usr/app/packages/cli/bin/lodestar.js lightclient \
-      --network sepolia \
-      --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
-      --checkpointRoot 0x1774236f43b7587a757d5e7ce99a082fbe03ac82b7b38fba8f64d20fdad45b76 \
-      --dataDir /data \
-      --logLevel info
-EOT 
-]
-    volume {
-      name                 = "lodestar-storage"
-      mount_path           = "/data"
-      share_name           = azurerm_storage_share.lodestar_share.name
-      storage_account_name = azurerm_storage_account.storage.name
-      storage_account_key  = azurerm_storage_account.storage.primary_access_key
-    }
-  }
-
-
-# --- Lodestar Prover Proxy ---
-  container {
-    name   = "prover"
-    image  = "chainsafe/lodestar:latest"
-    cpu    = "0.5"
-    memory = "1.0"
-    
+    # Port for your verified Execution RPC Proxy (e.g., for Metamask or apps)
     ports {
       port     = 8080
       protocol = "TCP"
@@ -123,16 +99,27 @@ EOT
 
     commands = [
       "/bin/sh", "-c",
-      <<EOT
-        node /usr/app/packages/cli/bin/lodestar.js prover proxy \
+      <<-EOT
+        node /usr/app/packages/cli/bin/lodestar.js lightclient \
           --network sepolia \
-          --executionRpcUrl ${var.infura_url} \
-          --beaconUrls http://127.0.0.1:9596 \
-          --port 8080 \
-          --address 0.0.0.0 \
-          --logLevel debug
-    EOT
+          --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
+          --checkpointRoot ${var.checkpoint_root} \
+          --dataDir /data \
+          --logLevel info \
+          --rpcProxy.enabled true \
+          --rpcProxy.executionRpcUrl ${var.infura_url} \
+          --rpcProxy.port 8080 \
+          --rpcProxy.host 0.0.0.0
+      EOT
     ]
+    
+    volume {
+      name                 = "lodestar-storage"
+      mount_path           = "/data"
+      share_name           = azurerm_storage_share.lodestar_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
   }
 
   container {
