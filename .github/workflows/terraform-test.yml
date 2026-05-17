@@ -18,7 +18,7 @@ jobs:
       TF_VAR_tailscale_key: ${{ secrets.TAILSCALE_KEY }}
       TF_VAR_infura_url: ${{ secrets.INFURA_URL }}
       TF_VAR_log_analytics_workspace: ${{secrets.LOG_ANALYTICS_WORKSPACE}}
-      TF_VAR_checkpoint_root: "0xbc0ca8819fff3e0852c23b1356d714f6ef1da975baf325e9af74428a9c4fdeee"
+      TF_VAR_checkpoint_root: "0x3ccc4af2d35d93b3d82b2c846e57fc982aaf9abab5f25ba2405669a4f4d8f15f"
 
     steps:
     - name: Checkout Code

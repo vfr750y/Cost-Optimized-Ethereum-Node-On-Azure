@@ -106,10 +106,6 @@ container {
           --checkpointRoot ${var.checkpoint_root} \
           --dataDir /data \
           --logLevel info \
-          --rpcProxy.enabled true \
-          --rpcProxy.executionRpcUrl ${var.infura_url} \
-          --rpcProxy.port 8080 \
-          --rpcProxy.host 0.0.0.0
       EOT
     ]
     
@@ -120,6 +116,32 @@ container {
       storage_account_name = azurerm_storage_account.storage.name
       storage_account_key  = azurerm_storage_account.storage.primary_access_key
     }
+  }
+
+  # --- Lodestar Prover Execution Proxy ---
+  container {
+    name   = "prover"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+    
+    ports {
+      port     = 8080
+      protocol = "TCP"
+    }
+
+    commands = [
+      "/bin/sh", "-c",
+      <<EOT
+        npm install -g @lodestar/prover && \
+        lodestar-prover proxy \
+        --network sepolia \
+        --executionRpcUrl ${var.infura_url} \
+        --beaconUrls http://127.0.0.1:9596 \
+        --port 8080 \
+        --address 0.0.0.0
+      EOT
+    ]
   }
 
   container {
