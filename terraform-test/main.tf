@@ -108,24 +108,32 @@ EOT
     }
   }
 
-  # --- Lodestar Prover Proxy ---
-# container {
-#  name   = "prover"
-#  image  = "chainsafe/lodestar:latest"
-#  cpu    = "0.5"
-#  memory = "1.0"
-#  
-#  ports {
-#    port     = 8080
-#    protocol = "TCP"
-#  }
 
-#commands = [
-#  "/bin/sh", "-c",
-#  "/usr/local/bin/lodestar prover proxy --network sepolia --executionRpcUrl ${var.infura_url} --beaconUrls http://127.0.0.1:9596 --port 8080 --address 0.0.0.0 --logLevel debug"
-#]
+# --- Lodestar Prover Proxy ---
+  container {
+    name   = "prover"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+    
+    ports {
+      port     = 8080
+      protocol = "TCP"
+    }
 
-#}
+    commands = [
+      "/bin/sh", "-c",
+      <<EOT
+        node /usr/app/packages/cli/bin/lodestar.js prover proxy \
+          --network sepolia \
+          --executionRpcUrl ${var.infura_url} \
+          --beaconUrls http://127.0.0.1:9596 \
+          --port 8080 \
+          --address 0.0.0.0 \
+          --logLevel debug
+    EOT
+    ]
+  }
 
   container {
     name   = "tailscale"
