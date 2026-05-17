@@ -94,7 +94,7 @@ commands = [
     node /usr/app/packages/cli/bin/lodestar.js lightclient \
       --network sepolia \
       --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
-      --checkpointRoot 0xccaff4b99986a7b05e06738f1828a32e40799b277fd9f9ff069be55341fe0229 \
+      --checkpointRoot 0xd8ea171f3c94aea21ebc42a1ed61052acf3f9209c00e4efbaaddac09ed9b8078 \
       --dataDir /data \
       --logLevel info
 EOT 
