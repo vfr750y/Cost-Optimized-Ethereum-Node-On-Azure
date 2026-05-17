@@ -90,18 +90,49 @@ container {
       port     = 9596
       protocol = "TCP"
     }
+# --- Lodestar Light Client ---
+  container {
+    name   = "lodestar"
+    image  = "chainsafe/lodestar:latest"
+    cpu    = "1.0"
+    memory = "2.0"
+    
+    ports {
+      port     = 9596
+      protocol = "TCP"
+    }
 
+    # Pass the arguments directly as an array instead of invoking /bin/sh
     commands = [
-      "/bin/sh", "-c",
-      <<-EOT
-        node /usr/app/packages/cli/bin/lodestar.js lightclient \
-          --network sepolia \
-          --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
-          --checkpointRoot ${var.checkpoint_root} \
-          --dataDir /data \
-          --logLevel info \
-      EOT
+      "node",
+      "/usr/app/packages/cli/bin/lodestar.js",
+      "lightclient",
+      "--network", "sepolia",
+      "--beaconApiUrl", "https://lodestar-sepolia.chainsafe.io",
+      "--checkpointRoot", var.checkpoint_root,
+      "--dataDir", "/data",
+      "--logLevel", "info"
     ]
+    
+    volume {
+      name                 = "lodestar-storage"
+      mount_path           = "/data"
+      share_name           = azurerm_storage_share.lodestar_share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
+  }
+  #  commands = [
+  #    "/bin/sh", "-c",
+  #    <<-EOT
+  #      node /usr/app/packages/cli/bin/lodestar.js lightclient \
+  #        --network sepolia \
+  #        --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
+  #        --checkpointRoot ${var.checkpoint_root} \
+  #        --dataDir /data \
+  #        --logLevel info \
+  #    EOT
+  #  ]
     
     volume {
       name                 = "lodestar-storage"
