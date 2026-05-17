@@ -135,7 +135,6 @@ container {
         --executionRpcUrl ${var.infura_url} \
         --beaconUrls http://127.0.0.1:9596 \
         --port 8080 \
-        --address 0.0.0.0
       EOT
     ]
   }
