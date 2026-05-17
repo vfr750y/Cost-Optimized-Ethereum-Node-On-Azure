@@ -124,17 +124,20 @@ container {
       protocol = "TCP"
     }
 
-    commands = [
+commands = [
       "/bin/sh", "-c",
       <<EOT
-        echo "Pausing 20 seconds to allow the Lodestar light client to open port 9596..." && \
-        sleep 20 && \
-        echo "Launching Built-in Lodestar Prover..." && \
+        echo "Waiting for Lodestar Light Client API to become healthy..." && \
+        while ! wget -qO- http://127.0.0.1:9596/eth/v1/node/version > /dev/null 2>&1; do \
+          echo "Light client API not ready yet. Retrying in 5 seconds..." && \
+          sleep 5; \
+        done && \
+        echo "Lodestar Light Client is up! Launching Prover..." && \
         node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
         --network sepolia \
         --executionRpcUrl ${var.infura_url} \
         --beaconUrls http://127.0.0.1:9596 \
-        --port 8080 \
+        --port 8080
       EOT
     ]
   }
