@@ -91,12 +91,6 @@ container {
       protocol = "TCP"
     }
 
-    # Port for your verified Execution RPC Proxy (e.g., for Metamask or apps)
-    ports {
-      port     = 8080
-      protocol = "TCP"
-    }
-
     commands = [
       "/bin/sh", "-c",
       <<-EOT
