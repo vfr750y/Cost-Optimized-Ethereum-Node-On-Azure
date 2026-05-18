@@ -99,7 +99,12 @@ resource "azurerm_container_group" "node_group" {
           --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
           --checkpointRoot ${var.checkpoint_root} \
           --dataDir /data \
+          --logFile /dev/stdout \
           --logLevel info
+          --rest.enabled true \
+          --rest.port 9596 \
+          --rest.address 0.0.0.0 \
+        2>&1
       EOT
   ]
     
