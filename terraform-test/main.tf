@@ -91,17 +91,17 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-    # Pass the arguments directly as an array instead of invoking /bin/sh
     commands = [
-      "node",
-      "/usr/app/packages/cli/bin/lodestar.js",
-      "lightclient",
-      "--network", "sepolia",
-      "--beaconApiUrl", "https://lodestar-sepolia.chainsafe.io",
-      "--checkpointRoot", var.checkpoint_root,
-      "--dataDir", "/data",
-      "--logLevel", "info"
-    ]
+      "/bin/sh", "-c",
+      <<-EOT
+        exec node /usr/app/packages/cli/bin/lodestar.js lightclient \
+          --network sepolia \
+          --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
+          --checkpointRoot ${var.checkpoint_root} \
+          --dataDir /data \
+          --logLevel info
+      EOT
+  ]
     
     volume {
       name                 = "lodestar-storage"
@@ -136,22 +136,28 @@ resource "azurerm_container_group" "node_group" {
       protocol = "TCP"
     }
 
-commands = [
-      "/bin/sh", "-c",
-      <<EOT
-        echo "Waiting for Lodestar Light Client API to become healthy..." && \
-        while ! wget -qO- http://127.0.0.1:9596/eth/v1/node/version > /dev/null 2>&1; do \
-          echo "Light client API not ready yet. Retrying in 5 seconds..." && \
-          sleep 5; \
-        done && \
-        echo "Lodestar Light Client is up! Launching Prover..." && \
-        node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
-        --network sepolia \
-        --executionRpcUrl ${var.infura_url} \
-        --beaconUrls http://127.0.0.1:9596 \
-        --port 8080
-      EOT
-    ]
+  commands = [
+    "/bin/sh", "-c",
+    <<-EOT
+      echo "Waiting for Lodestar Light Client API (max 30 attempts) ..."
+      attempt=0; max=30
+      while [ $attempt -lt $max ]; do
+        if wget -qO- http://127.0.0.1:9596/eth/v1/node/version > /dev/null 2>&1; then
+          echo "Lodestar ready. Starting Prover..."
+          exec node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
+            --network sepolia \
+            --executionRpcUrl ${var.infura_url} \
+            --beaconUrls http://127.0.0.1:9596 \
+            --port 8080
+        fi
+        attempt=$((attempt+1))
+        echo "Attempt $attempt/$max ..retrying in 5s..."
+        sleep 5
+        done
+        echo "ERROR: Lodestar did not become ready after $max attempts."
+      exit 1
+    EOT
+]
   }
 
   container {
