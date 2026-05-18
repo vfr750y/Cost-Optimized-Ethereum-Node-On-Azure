@@ -134,7 +134,7 @@ container {
         --executionRpcUrl ${var.infura_url} \
         --beaconUrls https://lodestar-sepolia.chainsafe.io \
         --port 8080 \
-        --checkpointRoot ${var.checkpoint_root}
+        --logLevel debug
     EOT
   ]
 }
