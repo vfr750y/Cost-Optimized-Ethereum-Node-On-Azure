@@ -111,54 +111,43 @@ resource "azurerm_container_group" "node_group" {
       storage_account_key  = azurerm_storage_account.storage.primary_access_key
     }
   }
-  #  commands = [
-  #    "/bin/sh", "-c",
-  #    <<-EOT
-  #      node /usr/app/packages/cli/bin/lodestar.js lightclient \
-  #        --network sepolia \
-  #        --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
-  #        --checkpointRoot ${var.checkpoint_root} \
-  #        --dataDir /data \
-  #        --logLevel info \
-  #    EOT
-  #  ]
- 
+
 
 # --- Lodestar Prover Execution Proxy ---
-  container {
-    name   = "prover"
-    image  = "chainsafe/lodestar:latest"
-    cpu    = "0.5"
-    memory = "1.0"
-    
-    ports {
-      port     = 8080
-      protocol = "TCP"
-    }
-
-  commands = [
-    "/bin/sh", "-c",
-    <<-EOT
-      echo "Waiting for Lodestar Light Client API (max 30 attempts) ..."
-      attempt=0; max=30
-      while [ $attempt -lt $max ]; do
-        if wget -qO- http://127.0.0.1:9596/eth/v1/node/version > /dev/null 2>&1; then
-          echo "Lodestar ready. Starting Prover..."
-          exec node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
-            --network sepolia \
-            --executionRpcUrl ${var.infura_url} \
-            --beaconUrls http://127.0.0.1:9596 \
-            --port 8080
-        fi
-        attempt=$((attempt+1))
-        echo "Attempt $attempt/$max ..retrying in 5s..."
-        sleep 5
-        done
-        echo "ERROR: Lodestar did not become ready after $max attempts."
-      exit 1
-    EOT
-]
-  }
+ # container {
+ #   name   = "prover"
+ #   image  = "chainsafe/lodestar:latest"
+ #   cpu    = "0.5"
+ #   memory = "1.0"
+ #   
+ #   ports {
+ #     port     = 8080
+ #     protocol = "TCP"
+ #   }
+#
+#  commands = [
+#    "/bin/sh", "-c",
+#    <<-EOT
+#      echo "Waiting for Lodestar Light Client API (max 30 attempts) ..."
+#      attempt=0; max=30
+#      while [ $attempt -lt $max ]; do
+#        if wget -qO- http://127.0.0.1:9596/eth/v1/node/version > /dev/null 2>&1; then
+#          echo "Lodestar ready. Starting Prover..."
+#          exec node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
+#            --network sepolia \
+#            --executionRpcUrl ${var.infura_url} \
+#            --beaconUrls http://127.0.0.1:9596 \
+#            --port 8080
+#        fi
+#        attempt=$((attempt+1))
+#        echo "Attempt $attempt/$max ..retrying in 5s..."
+#        sleep 5
+#        done
+#        echo "ERROR: Lodestar did not become ready after $max attempts."
+#      exit 1
+#    EOT
+#]
+#  }
 
   container {
     name   = "tailscale"
