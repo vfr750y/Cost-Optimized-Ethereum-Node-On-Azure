@@ -5,28 +5,13 @@
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
 |   1    | Log into the Azure Cloud shell                       | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
 |   2    | Create the target resource group<br>RG_NAME="rg-lodestar-node" \ <br>LOCATION="australiaeast" \ <br>az group create --name $RG_NAME --location $LOCATION   | ![Resource Group](./Screenshots/resourcegroup.png)     |
-|   3    |                                                      |                                                        |
+|   3    |  Create the Azure Service Principal (SPN) <br>az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
+  --scopes /subscriptions/{subscription-id}/resourceGroups/rg-lodestar-node \
+  --json-auth  |  ![App Registration](./Screenshots/appregistration.png) ![Enterprise Application](./Screenshots/enterpriseapplication.png)|
 
 
            
 
- 
-  # Detailed Implementation Steps (Dark Node Architecture)
-
-### Phase 1: Bootstrapping & Identity
-Build the Terraform management plane.
-
-#### Step 0 Open an Azure cloud shell
-Log into the azure portal
-Click on the >_ icon in the portal
-Choose Bash
-
-#### Step 1.0: Create the Target Resource Group
-```bash
-RG_NAME="rg-lodestar-node" \
-LOCATION="australiaeast" \
-az group create --name $RG_NAME --location $LOCATION
-```
 
 #### Step 1.1: Azure Service Principal (SPN) Creation
 ```bash
