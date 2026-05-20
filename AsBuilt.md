@@ -4,7 +4,7 @@
 | Step # | Description                                          |           Screenshot                                   |
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
 |   1    | Log into the Azure Cloud shell                       | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
-|   2    | Create the target resource group RG_NAME="rg-lodestar-node" \ LOCATION="australiaeast" \ az group create --name $RG_NAME --location $LOCATION   | ![Resource Group](./Screenshots/resourcegroup.png)     |
+|   2    | Create the target resource group<br>RG_NAME="rg-lodestar-node" \<br>LOCATION="australiaeast" \<br>az group create --name $RG_NAME --location $LOCATION   | ![Resource Group](./Screenshots/resourcegroup.png)     |
 |   3    |                                                      |                                                        |
 
 
