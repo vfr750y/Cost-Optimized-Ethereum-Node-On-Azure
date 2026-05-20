@@ -491,14 +491,15 @@ Build the Terraform management plane.
 #### Step 0 Open an Azure cloud shell
 Log into the azure portal
 Click on the >_ icon in the portal
-Choose Bash
+Choose Bash (not powershell)
 
 #### Step 1.0: Create the Target Resource Group
-```bash
+Commands:
+
 RG_NAME="rg-lodestar-node"
-LOCATION="eastus" 
+LOCATION="australiaeast" 
 az group create --name $RG_NAME --location $LOCATION
-```
+
 
 #### Step 1.1: Azure Service Principal (SPN) Creation
 ```bash

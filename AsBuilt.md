@@ -1,11 +1,13 @@
 # As built document
 
 
-| Step # | Description                                      |           Screenshot                                   |
-| :------|:-------------------------------------------------| :----------------------------------------------------- |
-|   1    | Log into the Azure Cloud shell                   | ![Cloud Shell icon](./Screenshots/image.png)           |
-|   2    | Create the target resource group                 |                                                        |
-
+| Step # | Description                                          |           Screenshot                                   |
+| :------|:-----------------------------------------------------| :----------------------------------------------------- |
+|   1    | Log into the Azure Cloud shell                       | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
+|   2    | Create the target resource group                     | ![Cloud Shell icon](./Screenshots/resourcegroup.png)   |
+|        |  RG_NAME="rg-lodestar-node" \
+|        |  LOCATION="australiaeast" \
+|        | az group create --name $RG_NAME --location $LOCATION
 
            
 
@@ -22,7 +24,7 @@ Choose Bash
 
 #### Step 1.0: Create the Target Resource Group
 ```bash
-RG_NAME="test" \
+RG_NAME="rg-lodestar-node" \
 LOCATION="australiaeast" \
 az group create --name $RG_NAME --location $LOCATION
 ```
