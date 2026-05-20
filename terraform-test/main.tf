@@ -100,7 +100,8 @@ resource "azurerm_container_group" "node_group" {
           --checkpointRoot ${var.checkpoint_root} \
           --dataDir /data \
           --logFile /dev/stdout \
-          --logLevel info
+          --logFileLevel verbose \
+          --logLevel verbose
       EOT
   ]
     
@@ -131,10 +132,10 @@ container {
       echo "Starting Lodestar Prover as a standalone proxy..." && \
       exec node /usr/app/packages/prover/bin/lodestar-prover.js proxy \
         --network sepolia \
-        --executionRpcUrl ${var.infura_url} \
+        --executionRpcUrl https://lodestar-sepoliarpc.chainsafe.io \
         --beaconUrls https://lodestar-sepolia.chainsafe.io \
         --port 8080 \
-        --logLevel debug
+        --logLevel verbose
     EOT
   ]
 }

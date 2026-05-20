@@ -40,6 +40,6 @@ jobs:
 #      working-directory: ./terraform-test
 
       # Add the Destroy step
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
-      working-directory: ./terraform-test
+#    - name: Terraform Destroy
+#      run: terraform destroy -auto-approve
+#      working-directory: ./terraform-test
