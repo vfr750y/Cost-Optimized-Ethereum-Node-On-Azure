@@ -5,8 +5,7 @@
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
 |   1    | Log into the Azure Cloud shell                       | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
 |   2    | Create the target resource group<br>RG_NAME="rg-lodestar-node" \ <br>LOCATION="australiaeast" \ <br>az group create --name $RG_NAME --location $LOCATION   | ![Resource Group](./Screenshots/resourcegroup.png)     |
-|   3    |  Create the Azure Service Principal (SPN) <br>az ad sp create-for-rbac --name "github-eth-node-sp" <br>--role contributor \
-  --scopes /subscriptions/{subscription-id} <br>/resourceGroups/rg-lodestar-node \ <br>--json-auth  |  ![App Registration](./Screenshots/appregistration.png) ![Enterprise Application](./Screenshots/enterpriseapplication.png)|
+|   3    |  Create the Azure Service Principal (SPN) <br>az ad sp create-for-rbac --name "github-eth-node-sp" <br>--role contributor \ <br>--scopes /subscriptions/{subscription-id} <br>/resourceGroups/rg-lodestar-node \ <br>--json-auth  |  ![App Registration](./Screenshots/appregistration.png) ![Enterprise Application](./Screenshots/enterpriseapplication.png)|
 
 
            
