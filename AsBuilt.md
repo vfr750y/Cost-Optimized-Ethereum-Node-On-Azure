@@ -1,9 +1,9 @@
 # As Built Implementation Steps
 
 ## Pre-requisites
-GitHub account
-Azure subscription
-Tailscale account
+* GitHub account
+* Azure subscription
+* Tailscale account
 
 ## Phase 1: Bootstrapping & Identity
 
