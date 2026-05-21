@@ -36,9 +36,9 @@ data "azurerm_log_analytics_workspace" "lodestar_logs" {
 }
 
 
-# ---------------------------------------------------------
+# ----------------------------------------------------------
 # 1. Storage Configuration
-# ---------------------------------------------------------
+# ----------------------------------------------------------
 resource "azurerm_storage_account" "storage" {
   name                     = "stlodestardata499"
   resource_group_name      = data.azurerm_resource_group.eth_node.name
