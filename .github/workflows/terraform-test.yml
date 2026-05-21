@@ -16,9 +16,9 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       TF_VAR_tailscale_key: ${{ secrets.TAILSCALE_KEY }}
-      TF_VAR_infura_url: ${{ secrets.INFURA_URL }}
+ ##   TF_VAR_infura_url: ${{ secrets.INFURA_URL }}
       TF_VAR_log_analytics_workspace: ${{secrets.LOG_ANALYTICS_WORKSPACE}}
-      TF_VAR_checkpoint_root: "0x939de07a80532b7efb128ea127225328c7fb6cb7f70c4f0b0074c0fd7aca1725"
+      TF_VAR_checkpoint_root: "0x94f1c2b606d57b522baab0d0a617f3bfb23ae4873c5eb91dc6c9c1476e9ce96a"
 
     steps:
     - name: Checkout Code
@@ -31,13 +31,13 @@ jobs:
       run: terraform init
       working-directory: ./terraform-test
 
-#    - name: Terraform Plan
-#      run: terraform plan
-#      working-directory: ./terraform-test
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: ./terraform-test
 
-#    - name: Terraform Apply
-#      run: terraform apply -auto-approve
-#      working-directory: ./terraform-test
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform-test
 
       # Add the Destroy step
 #    - name: Terraform Destroy

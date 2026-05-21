@@ -24,7 +24,12 @@
 |   2.1  | Log into [Tailscale](https://login.tailscale.com/admin/) <br>and generate an **Auth Key** in the Tailscale Admin Console. | ![Tailscale settings](./Screenshots/tailscalesettings.png) <br>![Tailscale generate auth key](./Screenshots/tailscalegeneratekey.png) |
 |   2.2  | Populate GitHub secrets  with `AZURE_CLIENT_ID`, <br>`AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, <br>`AZURE_SUBSCRIPTION_ID` . `LOG_ANALYTICS_WORKSPACE`, `TAILSCALE_KEY` | ![Add github secrets](./Screenshots/githubs.png) |
 
-## Phase 3: Infrastructure Deployment (The "Dark" Apply)
+## Phase 3: Infrastructure Deployment 
+
+| Step # | Description                                          |           Screenshot                                   |
+| :------|:-----------------------------------------------------| :----------------------------------------------------- |
+|   3.1  | Get the latest Sepolia checkpoint root block <br>and paste it into the TF_VAR_checkpoint_root variable in the .yml file | ![TF_VAR_CHECKPOINT](./Screenshots/yml.png) |
+|   3.2  | Trigger GitHub Actions to deploy the `main.tf` | ![Add github secrets](./Screenshots/githubs.png) |
 
 #### Step 3.1: Terraform Apply
 * **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
