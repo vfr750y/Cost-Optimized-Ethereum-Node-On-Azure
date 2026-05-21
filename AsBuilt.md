@@ -1,5 +1,10 @@
 # As Built Implementation Steps
 
+## Pre-requisites
+GitHub account
+Azure subscription
+Tailscale account
+
 ## Phase 1: Bootstrapping & Identity
 
 | Step # | Description                                          |           Screenshot                                   |
@@ -8,43 +13,18 @@
 |   1.1    | Create the target resource group <br>At the cloud shell prompt type the commands: <br>``` RG_NAME="rg-lodestar-node" \``` <br>```LOCATION="australiaeast" \``` <br>```az group create --name $RG_NAME --location $LOCATION```   | ![Resource Group](./Screenshots/resourcegroup.png)     |
 |   1.2    |  Create the Azure Service Principal (SPN) <br>At the cloud shell prompt type the command: <br>```az ad sp create-for-rbac --name "github-eth-node-sp"``` <br>```--role contributor \``` <br>```--scopes /subscriptions/{subscription-id}``` <br>```/resourceGroups/rg-lodestar-node \``` <br>```--json-auth```  |  ![App Registration](./Screenshots/appregistration.png) ![Enterprise Application](./Screenshots/enterpriseapplication.png)|
 |   1.3    | Create the Storage Account for state management  <br>``` STORAGE_NAME="stethterraformstate" ``` <br>```az storage account create ``` <br> ```--name $STORAGE_NAME``` <br>```--resource-group rg-lodestar-node``` <br>```--location eastus --sku Standard_LRS <br>``` <br>```az storage container create --name tfstate ``` <br>```--account-name $STORAGE_NAME``` | ![Terraform Storage Account](./Screenshots/tfstacc.png) |
+|   1.4    |Create the Log Analytics Workspace <br>```az monitor log-analytics workspace``` <br>```create --resource-group rg-lodestar-node \``` <br>```--workspace-name lodestarloganalytics``` |  ![Log Analytics Worskspace](./Screenshots/loganalyticsworkspace.png) |
 
 
-#### Step 1.1: Azure Service Principal (SPN) Creation
-```bash
-az ad sp create-for-rbac --name "github-eth-node-sp" --role contributor \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/rg-lodestar-node \
-  --json-auth
-```
 
-#### Step 1.2: Terraform Backend Setup
-* **Action:** Create the Storage Account for state management.
-```bash
-STORAGE_NAME="stethterraformstate"
-az storage account create --name $STORAGE_NAME --resource-group rg-lodestar-node --location eastus --sku Standard_LRS
-az storage container create --name tfstate --account-name $STORAGE_NAME
-echo "Store this in GitHub Secrets as TF_STATE_STORAGE_ACCOUNT: $STORAGE_NAME"
-```
+## Phase 2: Repository & Secret Management
 
+| Step # | Description                                          |           Screenshot                                   |
+| :------|:-----------------------------------------------------| :----------------------------------------------------- |
+|   2.1  | Log into [Tailscale](https://login.tailscale.com/admin/) <br>and generate an **Auth Key** in the Tailscale Admin Console. | ![Tailscale settings](./Screenshots/tailscalesettings.png) <br>![Tailscale generate auth key](./Screenshots/tailscalegeneratekey.png) |
+|   2.2  | Populate GitHub secrets  with `AZURE_CLIENT_ID`, <br>`AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, <br>`AZURE_SUBSCRIPTION_ID` . `LOG_ANALYTICS_WORKSPACE`, `TAILSCALE_KEY` | ![Add github secrets](./Screenshots/githubs.png) |
 
-### Phase 2: Repository & Secret Management
-
-#### Step 2.1: Secure Tailscale & Infura Secrets
-1. **Tailscale:** Generate an **Auth Key** in the Tailscale Admin Console. 
-   - **Settings:** Reusable = Yes, Ephemeral = Yes, Pre-authorized = Yes.
-   - **Action:** Save to GitHub Secrets as `TAILSCALE_KEY`.
-2. **Infura/Alchemy:** Create a free project and copy the **HTTPS Execution Layer URL** (e.g., `https://sepolia.infura.io/v3/...`).
-   - **Action:** Save to GitHub Secrets as `INFURA_URL`.
-
-#### Step 2.2: GitHub Secrets Injection
-* **Action:** Populate GitHub Secrets with:
-    * `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
-    * `TAILSCALE_KEY`
-    * `INFURA_URL`
-
----
-
-### Phase 3: Infrastructure Deployment (The "Dark" Apply)
+## Phase 3: Infrastructure Deployment (The "Dark" Apply)
 
 #### Step 3.1: Terraform Apply
 * **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
