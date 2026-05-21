@@ -9,7 +9,7 @@
 
 | Step # | Description                                          |           Screenshot                                   |
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
-|   1.0    | Log into the [Azure portal](htps://portal.azure.com) then <br>log into the Azure Cloud shell | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
+|   1.0    | Log into the [Azure portal](https://portal.azure.com) then <br>log into the Azure Cloud shell | ![Cloud Shell icon](./Screenshots/cloudshell.png)      |
 |   1.1    | Create the target resource group <br>At the cloud shell prompt type the commands: <br>``` RG_NAME="rg-lodestar-node" \``` <br>```LOCATION="australiaeast" \``` <br>```az group create --name $RG_NAME --location $LOCATION```   | ![Resource Group](./Screenshots/resourcegroup.png)     |
 |   1.2    |  Create the Azure Service Principal (SPN) <br>At the cloud shell prompt type the command: <br>```az ad sp create-for-rbac --name "github-eth-node-sp"``` <br>```--role contributor \``` <br>```--scopes /subscriptions/{subscription-id}``` <br>```/resourceGroups/rg-lodestar-node \``` <br>```--json-auth```  |  ![App Registration](./Screenshots/appregistration.png) ![Enterprise Application](./Screenshots/enterpriseapplication.png)|
 |   1.3    | Create the Storage Account for state management  <br>``` STORAGE_NAME="stethterraformstate" ``` <br>```az storage account create ``` <br> ```--name $STORAGE_NAME``` <br>```--resource-group rg-lodestar-node``` <br>```--location eastus --sku Standard_LRS <br>``` <br>```az storage container create --name tfstate ``` <br>```--account-name $STORAGE_NAME``` | ![Terraform Storage Account](./Screenshots/tfstacc.png) |
