@@ -99,11 +99,13 @@ resource "azurerm_container_group" "node_group" {
           --beaconApiUrl https://lodestar-sepolia.chainsafe.io \
           --checkpointRoot ${var.checkpoint_root} \
           --dataDir /data \
-          --logFile /dev/stdout \
-          --logFileLevel verbose \
+
           --logLevel verbose
       EOT
   ]
+# Removed from commands above
+#          --logFile /dev/stdout \
+#        --logFileLevel verbose \
     
     volume {
       name                 = "lodestar-storage"

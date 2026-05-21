@@ -29,7 +29,8 @@
 | Step # | Description                                          |           Screenshot                                   |
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
 |   3.1  | Get the latest Sepolia checkpoint root block <br>and paste it into the TF_VAR_checkpoint_root variable in the .yml file | ![TF_VAR_CHECKPOINT](./Screenshots/yml.png) |
-|   3.2  | Trigger GitHub Actions to deploy the `main.tf` | ![Add github secrets](./Screenshots/githubs.png) |
+|   3.2  | Trigger GitHub Actions to deploy the `main.tf` | ![GitHub Actions](./Screenshots/githubaction.png) |
+|   3.3  | Verify Azure successful GitHub actions         | ![Github success](./Screenshots/success.png)
 
 #### Step 3.1: Terraform Apply
 * **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
