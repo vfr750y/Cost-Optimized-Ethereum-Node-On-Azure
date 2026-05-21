@@ -9,10 +9,10 @@ variable "tailscale_key" {
   sensitive   = true
 }
 
-variable "infura_url" {
-  description = "Execution Layer RPC URL (Infura/Alchemy)"
-  type        = string
-}
+#variable "infura_url" {
+#  description = "Execution Layer RPC URL (Infura/Alchemy)"
+#  type        = string
+#}
 
 variable "log_analytics_workspace" {
   description = "Log analytics workspace for container logging"
