@@ -78,12 +78,9 @@ graph TB
 
 ## 💼 Need a Custom Solution? 
 I specialize in helping Enterprises scale their infrastructure while minimizing cloud spend. 
-* **Custom AI Agents:** I can integrate AI agents to analyze your node traffic and Etherscan data for real-time insights.
-
 [**Hire me on Upwork for your Web3 DevOps needs**]
 
-## Project stages
-The following are the basic stages for this project.
+## Further documentation
 
 ### [1) Project plan](ProjectPlan.md)
 ### [2) Requirements Analysis](RequirementsAnalysis.md)
