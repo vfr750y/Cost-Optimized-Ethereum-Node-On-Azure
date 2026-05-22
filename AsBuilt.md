@@ -43,7 +43,7 @@
 We verify that MetaMask/Rabby can talk to the **Prover**, which in turn talks to **Lodestar**.
 * **Action:** On your local laptop (with Tailscale active), run:
     ```bash
-curl -X POST -H "Content-Type: application/json" \
+      curl -X POST -H "Content-Type: application/json" \
       --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
       http://eth-light-node.tail1df2ad.ts.net:8080
     ```
