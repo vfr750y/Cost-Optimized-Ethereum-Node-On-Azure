@@ -30,7 +30,8 @@
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
 |   3.1  | Get the latest Sepolia checkpoint root block <br>and paste it into the TF_VAR_checkpoint_root variable in the .yml file | ![TF_VAR_CHECKPOINT](./Screenshots/yml.png) |
 |   3.2  | Trigger GitHub Actions to deploy the `main.tf` | ![GitHub Actions](./Screenshots/githubaction.png) |
-|   3.3  | Verify Azure successful GitHub actions         | ![Github success](./Screenshots/success.png)
+|   3.3  | Verify Azure successful GitHub actions         | ![Github success](./Screenshots/success.png)      |
+|   3.4  | Verify resources created in Azure
 
 #### Step 3.1: Terraform Apply
 * **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
@@ -65,10 +66,12 @@
 We verify that MetaMask/Rabby can talk to the **Prover**, which in turn talks to **Lodestar**.
 * **Action:** On your local laptop (with Tailscale active), run:
     ```bash
-    curl -X POST -H "Content-Type: application/json" \
+curl -X POST -H "Content-Type: application/json" \
       --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
-      http://eth-light-node:8080
+      http://eth-light-node.tail1df2ad.ts.net:8080
     ```
+NOTE: USE FULL TAILSCALE DOMAIN
+    EXAMPLE OUTPUT : {"jsonrpc":"2.0","id":1,"result":"0xa63cef"}
 * **Verification:** You should receive a hex block number. This proves the "Dark Node" is fetching data from Infura and verifying it against your light client.
 
 #### Step 5.2: Security Audit (Invisibility Test)
