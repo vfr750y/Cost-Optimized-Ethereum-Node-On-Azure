@@ -49,7 +49,8 @@ graph TB
     Wallet --> TS_App
     TS_App == "WireGuard Tunnel" ==> Tailscale
     Tailscale -. "Localhost" .-> Prover
-    Prover -. "Localhost" .-> Lodestar
+    Prover -- "Outbound Only" --> ((Web3Provider))
+    Tailscale -. "Localhost" .-> Lodestar
     Lodestar -- "Outbound Only" --> Eth_Network((Ethereum P2P))
     Lodestar -- "Mount" --> FS
 ```
