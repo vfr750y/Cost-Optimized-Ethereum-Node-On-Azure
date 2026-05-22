@@ -18,17 +18,6 @@ This project leverages **Azure Container Instances (ACI)** to provide a serverle
 | **Networking**            | Private VNet + Tailscale | $0.00     | Private VNet + Tailscale | $0.00        |
 | **Estimated Total**       | **Daily: ~$1.25**     | **$37.45**   | **Daily: ~$2.60**        | **$77.90**   |
 
----
-
-### 📊 Competitive Comparison
-
-| Provider | Service Tier | Monthly Cost | Savings with this Repo |
-| :--- | :--- | :--- | :--- |
-| **Infura** | Growth Tier | $299.00+ | **~74% Savings** |
-| **Alchemy** | Growth Tier | $199.00+ | **~61% Savings** |
-| **This Solution** | **Production (Azure)** | **$77.90** | **100% Data Ownership** |
-
----
 
 ### 💡 Why This Architecture?
 * **Zero Idle Waste:** ACI bills per-second of usage. If you stop the containers, you stop the billing.
@@ -66,7 +55,7 @@ graph TB
 ```
 
 ## 🌟 Business Value & Key Features
-*   **Cost Reduction:** Leverage Azure's B-Series VMs and Light Node sync modes to cut costs by 60-80%.
+*   **Cost Reduction:** Leverage Azure container instances and Light Node sync modes to cut costs by 60-80%.
 *   **Infrastructure as Code (IaC):** 100% automated deployment via Terraform—no manual configuration errors.
 *   **Full Data Sovereignty:** Own your RPC endpoints. No rate limits, no third-party tracking.
 *   **Enterprise-Ready:** Built-in support for Azure Key Vault (Security) and Resource Groups (Organization).
@@ -75,12 +64,13 @@ graph TB
 *   **Cloud:** Microsoft Azure
 *   **Provisioning:** Terraform
 *   **Blockchain:** Ethereum Mainnet / Sepolia
+*   **Connectivity:** Tailscale
 
 ---
 
 ## 🚀 Deployment in 3 Steps
 1. **Clone & Initialize:** `git clone ... && terraform init`
-2. **Configure:** Update `variables.tf` with your Azure Subscription ID.
+2. **Configure:** Update TF_VARIABLEs with your Azure Subscription ID.
 3. **Deploy:** `terraform apply`
 
 ---
@@ -90,15 +80,6 @@ I specialize in helping Enterprises scale their infrastructure while minimizing 
 * **Custom AI Agents:** I can integrate AI agents to analyze your node traffic and Etherscan data for real-time insights.
 
 [**Hire me on Upwork for your Web3 DevOps needs**]
-
-### Description of project
-This project deploys an Ethererum node on Azure using version control (GitHub) to manage the development and Infrastructure as Code (Terraform) to deploy and configure the relevant Azure resources. Building an Ethereum node on Azure invoives connecting a compute resource with the node software installed and running on it to the internet and the Ethereum node mesh. Additionally a secure private connection is required for administration.A full node has 2 core components to install, the execution client and the consensus client. There are also 2 sets of network ports to consider, the external Peer-to-Peer (P2P) ports and the internal admin ports. The main constraints for the project are costs and security.
- 
-### Cost as a priority
-The budget for this project is restricted, so at each stage of this project I'll be looking carefully at costs in Azure and finding ways to minimise them. If it's not feasible to do a full node then there are a couple of other node types to consider that might be more feasible. A Sepolia test node is also going to be cheaper than a full node. I'll compare standard VM vs Containerisation and also to get an idea of the costs for data ingress and egress. 
-
-### Security without compromise
-I need to make sure that the system is secure. I'll analyse the the network ports that are required and how best to secure the compute environment from the internet and to provide a secure and private admin connection. 
 
 ## Project stages
 The following are the basic stages for this project.
