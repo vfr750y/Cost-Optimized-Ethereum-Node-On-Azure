@@ -24,22 +24,17 @@
 |   2.1  | Log into [Tailscale](https://login.tailscale.com/admin/) <br>and generate an **Auth Key** in the Tailscale Admin Console. | ![Tailscale settings](./Screenshots/tailscalesettings.png) <br>![Tailscale generate auth key](./Screenshots/tailscalegeneratekey.png) |
 |   2.2  | Populate GitHub secrets  with `AZURE_CLIENT_ID`, <br>`AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, <br>`AZURE_SUBSCRIPTION_ID` . `LOG_ANALYTICS_WORKSPACE`, `TAILSCALE_KEY` | ![Add github secrets](./Screenshots/githubs.png) |
 
-## Phase 3: Infrastructure Deployment 
+## Phase 3: Infrastructure Deployment and verification
 
 | Step # | Description                                          |           Screenshot                                   |
 | :------|:-----------------------------------------------------| :----------------------------------------------------- |
-|   3.1  | Get the latest Sepolia checkpoint root block <br>and paste it into the TF_VAR_checkpoint_root variable in the .yml file | ![TF_VAR_CHECKPOINT](./Screenshots/yml.png) |
-|   3.2  | Trigger GitHub Actions to deploy the `main.tf` | ![GitHub Actions](./Screenshots/githubaction.png) |
+|   3.1  | Get the latest Sepolia [checkpoint](https://https://sepolia.beaconstate.info/) root block <br>and paste it into the TF_VAR_checkpoint_root variable in the .yml file | ![TF_VAR_CHECKPOINT](./Screenshots/yml.png) |
+|   3.2  | Trigger GitHub Actions (e.g. use local git push) to deploy the `main.tf` | ![GitHub Actions](./Screenshots/githubaction.png) |
 |   3.3  | Verify Azure successful GitHub actions         | ![Github success](./Screenshots/success.png)      |
-|   3.4  | Verify resources created in Azure
+|   3.4  | Verify resources created in Azure              | ![Azure resources](./Screenshots/resources.png)   |
+|   3.5  | Monitor the Tailscale Admin Console. <br> A new machine named `eth-light-node` should appear. <br>Note its **Tailscale IP** (100.x.y.z). |  ![Tailscale Node](./Screenshots/tailscalenode.png)      |
 
-#### Step 3.1: Terraform Apply
-* **Action:** Trigger GitHub Actions to deploy the `main.tf` with `ip_address_type = "None"`.
-* **Verification:** Navigate to the Azure Portal > Container Groups.
-    * **Confirm:** The group exists.
-    * **Confirm:** There is **no Public IP address** assigned to the instance.
 
----
 
 ### Phase 4: Container Orchestration & Networking
 
