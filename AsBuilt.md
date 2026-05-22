@@ -33,31 +33,13 @@
 |   3.3  | Verify Azure successful GitHub actions         | ![Github success](./Screenshots/success.png)      |
 |   3.4  | Verify resources created in Azure              | ![Azure resources](./Screenshots/resources.png)   |
 |   3.5  | Monitor the Tailscale Admin Console. <br> A new machine named `eth-light-node` should appear. <br>Note its **Tailscale IP** (100.x.y.z). |  ![Tailscale Node](./Screenshots/tailscalenode.png)      |
+|  3.6  | Check logs for tailscale and prover containers | ![Tailscale logs](./Screenshots/tailscalelogs.png) <br> ![Prover logs](./Screenshots/proverlogs.png) |
+|  3.7  | Edit the log file to view the logsfor the lodestar container <br> they are saved to the file share in the storage account | ![Lodestar logs](./Screenshots/lodestarlogs.png) |
 
 
+## Phase 4: Final Validation & Connectivity
 
-### Phase 4: Container Orchestration & Networking
-
-#### Step 4.1: Sidecar Initialization (Tailscale)
-* **Action:** Monitor the Tailscale Admin Console.
-* **Verification:** A new machine named `eth-light-node` should appear. Note its **Tailscale IP** (100.x.y.z).
-
-#### Step 4.2: Lodestar & Prover Startup
-* **Action:** Stream the logs for the three containers:
-    ```bash
-    # Check Light Client Sync
-    az container logs -g rg-lodestar-node -n lodestar-dark-node --container-name lodestar
-    # Check Prover Proxy Connectivity
-    az container logs -g rg-lodestar-node -n lodestar-dark-node --container-name prover
-    ```
-* **Verification:** * `lodestar`: Look for `Verified transition to new sync committee`.
-    * `prover`: Look for `Proxy server listening on port 8080`.
-
----
-
-### Phase 5: Final Validation & Connectivity
-
-#### Step 5.1: The "Verified RPC" Test
+### Step 4.1: The "Verified RPC" Test
 We verify that MetaMask/Rabby can talk to the **Prover**, which in turn talks to **Lodestar**.
 * **Action:** On your local laptop (with Tailscale active), run:
     ```bash
@@ -65,10 +47,7 @@ curl -X POST -H "Content-Type: application/json" \
       --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
       http://eth-light-node.tail1df2ad.ts.net:8080
     ```
-NOTE: USE FULL TAILSCALE DOMAIN
+NOTE: USE FULL TAILSCALE DOMAIN  (or your local hosts file).
+* **Verification:** You should receive a hex block number. 
     EXAMPLE OUTPUT : {"jsonrpc":"2.0","id":1,"result":"0xa63cef"}
-* **Verification:** You should receive a hex block number. This proves the "Dark Node" is fetching data from Infura and verifying it against your light client.
 
-#### Step 5.2: Security Audit (Invisibility Test)
-* **Action:** Attempt to ping or port scan your Azure Resource Group's internal IP from outside Tailscale.
-* **Verification:** The node should be **unreachable**. There is no public path to the node; it only exists within your private mesh.
