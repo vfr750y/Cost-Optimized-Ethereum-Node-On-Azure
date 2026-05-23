@@ -65,7 +65,7 @@ graph TB
 *   **Cost Reduction:** Leverage Azure container instances and Light Node sync modes to cut costs.
 *   **Infrastructure as Code (IaC):** 100% automated deployment via Terraform—no manual configuration errors.
 *   **Full Data Sovereignty:** Own your RPC endpoints. No rate limits, no third-party tracking.
-*   **Enterprise-Ready:** Built-in support for Azure Key Vault (Security) and Resource Groups (Organization).
+*   **Scaleable:** Scale out by adding more instances or scale up by re-sizing the containers
 
 ## 🛠 Tech Stack
 *   **Cloud:** Microsoft Azure
@@ -77,7 +77,7 @@ graph TB
 
 ## 
 ## 🚀 Deployment in 4 stages:
-1. **Bootstrap:** Azure infrastructure and Service Principle
+1. **Bootstrap:** Azure infrastructure and Service Principal
 2. **Configure GitHub secrets:** Add github secrets for your environment.
 3. **Deploy:** `terraform apply` via GitHub actions
 4. **Verify** Check log files, container logs, and test RPC for wallet connectivity.
