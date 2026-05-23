@@ -79,7 +79,8 @@ graph TB
 ## 🚀 Deployment in 4 stages:
 1. **Bootstrap:** Azure infrastructure and Service Principle
 2. **Configure GitHub secrets:** Add github secrets for your environment.
-3. **Deploy:** `terraform apply`
+3. **Deploy:** `terraform apply` via GitHub actions
+4. **Verify** Check log files, container logs, and test RPC for wallet connectivity.
 
 ---
 
