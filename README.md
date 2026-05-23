@@ -4,11 +4,11 @@
 [![Provider: Azure](https://img.shields.io/badge/Provider-Azure-blue)](https://azure.microsoft.com/)
 [![IaC: Terraform](https://img.shields.io/badge/IaC-Terraform-purple)](https://www.terraform.io/)
 
-Managed node providers (Infura, Alchemy, QuickNode) are excellent but expensive at scale. This project provides a **production-ready framework** to host your own Ethereum Light Nodes on Azure for a fraction of the cost.
+This project provides a **production-ready framework** to host your own Ethereum Light Nodes on Azure enabling direct blockchain interactions for a fraction of the cost of a full node without relying on a managed node provider such as Infura or Alchemy.
 
 ### 💰 Estimated Monthly Infrastructure Costs (Azure 2026)
 
-This project leverages **Azure Container Instances (ACI)** to provide a serverless, "pay-as-you-go" infrastructure. By avoiding dedicated VMs and using Tailscale for private networking, we eliminate the need for expensive Load Balancers and Public IPs. **The costs shown below are for 100% utilization.** The light node containerised Azure resources can be deployed when neeeded using the latest checkpoint block route to avoid startup overheads for CPU and data transfer. Stop the container group to stop billing.
+This project leverages **Azure Container Instances (ACI)** to provide a simplified, serverless, "pay-as-you-go" infrastructure. By avoiding dedicated VMs and using Tailscale for private networking, we eliminate the need for expensive Load Balancers and Public IPs and complex networking and security configuration. **The costs shown below are for 100% utilization.** The light node containerised Azure resources can be deployed when neeeded using the latest checkpoint block route to avoid startup overheads for CPU and data transfer. Stop the container group to stop billing.
 
 | Resource Component        | Minimum (Low Traffic) | Maximum Monthly Cost | Recommended (Production) | Maximum Monthly Cost |
 | :------------------------ | :-------------------- | :----------- | :----------------------- | :------------------- |
@@ -23,7 +23,7 @@ This project leverages **Azure Container Instances (ACI)** to provide a serverle
 * **Zero Idle Waste:** ACI bills per-second of usage. If you stop the containers, you stop the billing.
 * **No "Cloud Tax":** Bypassing Public IPs and Load Balancers saves ~$25-$40/month in standard Azure networking fees.
 * **Lodestar Optimized:** Uses the TypeScript-based Lodestar client, specifically tuned for low-memory environments like containers.
-* **Privacy First:** Traffic remains within your private Tailscale network, invisible to the public internet and protected from ISP/Cloud provider snooping.
+* **Privacy First:** Wallet based transactions and admin traffic remain within your private Tailscale network, invisible to the public internet.
 
 ```mermaid
 graph TB
@@ -55,23 +55,30 @@ graph TB
     Lodestar -- "Mount" --> FS
 ```
 
+## :warning: Pre-requisites
+*  **GitHub account**
+*  **Azure subscription**
+*  **Tailscale account**
+
+
 ## 🌟 Business Value & Key Features
-*   **Cost Reduction:** Leverage Azure container instances and Light Node sync modes to cut costs by 60-80%.
+*   **Cost Reduction:** Leverage Azure container instances and Light Node sync modes to cut costs.
 *   **Infrastructure as Code (IaC):** 100% automated deployment via Terraform—no manual configuration errors.
 *   **Full Data Sovereignty:** Own your RPC endpoints. No rate limits, no third-party tracking.
 *   **Enterprise-Ready:** Built-in support for Azure Key Vault (Security) and Resource Groups (Organization).
 
 ## 🛠 Tech Stack
 *   **Cloud:** Microsoft Azure
-*   **Provisioning:** Terraform
+*   **Provisioning:** GitHub actions using Azure based Terraform state file
 *   **Blockchain:** Ethereum Mainnet / Sepolia
 *   **Connectivity:** Tailscale
 
 ---
 
-## 🚀 Deployment in 3 Steps
-1. **Clone & Initialize:** `git clone ... && terraform init`
-2. **Configure:** Update TF_VARIABLEs with your Azure Subscription ID.
+## 
+## 🚀 Deployment in 4 stages:
+1. **Bootstrap:** Azure infrastructure and Service Principle
+2. **Configure GitHub secrets:** Add github secrets for your environment.
 3. **Deploy:** `terraform apply`
 
 ---
