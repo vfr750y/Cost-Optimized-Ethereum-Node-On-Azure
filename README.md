@@ -8,15 +8,15 @@ Managed node providers (Infura, Alchemy, QuickNode) are excellent but expensive 
 
 ### 💰 Estimated Monthly Infrastructure Costs (Azure 2026)
 
-This project leverages **Azure Container Instances (ACI)** to provide a serverless, "pay-as-you-go" infrastructure. By avoiding dedicated VMs and using **Tailscale** for private networking, we eliminate the need for expensive Load Balancers and Public IPs.
+This project leverages **Azure Container Instances (ACI)** to provide a serverless, "pay-as-you-go" infrastructure. By avoiding dedicated VMs and using Tailscale for private networking, we eliminate the need for expensive Load Balancers and Public IPs. **The costs shown below are for 100% utilization.** The light node containerised Azure resources can be deployed when neeeded using the latest checkpoint block route to avoid startup overheads for CPU and data transfer. Stop the container group to stop billing.
 
-| Resource Component        | Minimum (Low Traffic) | Monthly Cost | Recommended (Production) | Monthly Cost |
-| :------------------------ | :-------------------- | :----------- | :----------------------- | :----------- |
-| **Compute (vCPU)**        | 0.85 vCPU Total       | ~$30.15      | 1.75 vCPU Total          | ~$62.10      |
-| **Memory (RAM)**          | 1.6 GiB Total         | ~$6.30       | 3.5 GiB Total            | ~$13.80      |
+| Resource Component        | Minimum (Low Traffic) | Maximum Monthly Cost | Recommended (Production) | Maximum Monthly Cost |
+| :------------------------ | :-------------------- | :----------- | :----------------------- | :------------------- |
+| **Compute (vCPU)**        | 1 vCPU Total          | ~$30         | 1.75 vCPU Total          | ~$58         |
+| **Memory (RAM)**          | 1.5 GiB Total         | ~$6          | 3.5 GiB Total            | ~$11         |
 | **Storage (Azure Files)** | 32 GB Standard Hot    | ~$5          | 32 GB Standard Hot       | ~$5          |
-| **Networking**            | Private VNet + Tailscale | $0.00     | Private VNet + Tailscale | $0.00        |
-| **Estimated Total**       | **Daily: ~$1.25**     | **$37.45**   | **Daily: ~$2.60**        | **$77.90**   |
+| **Networking**            | Tailscale             | $0.00        | Tailscale | $0.00        |
+| **Estimated Total** (USD) | **max daily: ~$1.20** | **$41   **   | **Daily: ~$2.60**        | **$74**      |
 
 
 ### 💡 Why This Architecture?
