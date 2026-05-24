@@ -12,7 +12,7 @@ erDiagram
     PROVER_PROXY ||--|| P2p_NETWORK : "queries / verifies"
     LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
 ```
-```
+```mermaid
 erDiagram
     USER ||--o{ WALLET : "manages"
     USER ||--o{ LIGHT_CLIENT : "queries (via Tailnet)"
