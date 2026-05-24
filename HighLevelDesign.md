@@ -12,7 +12,15 @@ erDiagram
     PROVER_PROXY ||--|| P2p_NETWORK : "queries / verifies"
     LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
 ```
-
+```
+erDiagram
+    USER ||--o{ WALLET : "manages"
+    USER ||--o{ LIGHT_CLIENT : "queries (via Tailnet)"
+    WALLET ||--o{ PROVER_PROXY : "connects to"
+    PROVER_PROXY ||--o{ LIGHT_CLIENT : "requests trusted state"
+    LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
+    PROVER_PROXY ||--o{ P2P_NETWORK : "fetches execution data"
+```
 ### Diagram explanation
 1. **User to Wallet:**
 An individual user acts as the owner of their private keys. A User must exist for a Wallet to be managed, but a new User might not have created a Wallet yet (hence "Zero or Many"). However, a Wallet is logically tied to exactly one owner for accountability and access control.
