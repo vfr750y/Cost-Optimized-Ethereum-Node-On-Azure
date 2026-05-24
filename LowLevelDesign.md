@@ -442,9 +442,9 @@ sequenceDiagram
 ## Detailed breakdown of costs
 ## Detailed description of security risks and mitigations
 
-### Security Risk Assessment (Dark Node Architecture)
+### Security Risk Assessment
 
-The exposure is divided into three vectors:
+The exposure is divided into these vectors:
 
 * **The Trusted Proxy (Internal Loopback):** If the Lodestar prover process is compromised, it could return fraudulent transaction data.
 * **The Supply Chain (Container Group):** With three containers (`lodestar`, `prover`, `tailscale`) sharing a single network namespace and disk mount, a vulnerability in any one image can compromise the entire group.
@@ -471,7 +471,7 @@ The following steps can be taken to further enhance the security of this solutio
 
 #### 1. Infrastructure & Storage Hardening
 * **Storage Firewalls:** Configure the Storage Account to **"Enabled from selected virtual networks and IP addresses."** Since we are not using a VNet, restrict access to the specific Azure Service Principal or use **Private Endpoints** if budget allows later.
-* **Managed Identities:** Avoid using Storage Access Keys in the Terraform code. Use a **System-Assigned Managed Identity** for the ACI to authenticate to the File Share.
+* **Secure the Terraform state backend:** To connect to an Azure file share, container instances must use CIFS authentication this explicitly requires the use of the storage account name and master storage key as the password. These appear as PLAINTEXT within the terraform state file. It is vital to secure the storage account containing the terraform state. 
 * **Disk Isolation:** If possible, use separate sub-folders or separate File Shares for Lodestar data and Tailscale state to prevent a compromised container from accessing all persistent data.
 
 ### 2. Network & Proxy Security
@@ -483,7 +483,7 @@ The following steps can be taken to further enhance the security of this solutio
 
 ### 3. Supply Chain & Lifecycle
 * **Image Pinning (SHA256):** Do not use `:latest`. Pin `chainsafe/lodestar` and `tailscale/tailscale` to specific digest hashes. This ensures that a compromise of the Docker Hub repository does not automatically infect your node.
-* **OIDC Authentication:** Transition GitHub Actions to use **Workload Identity Federation (OIDC)**. This removes the need to store long-lived `AZURE_CLIENT_SECRET` in GitHub, using short-lived tokens for each deployment instead.
+* **OIDC Authentication:** Transition GitHub Actions to use **Workload Identity Federation (OIDC)**. This removes the need to store long-lived `AZURE_CLIENT_SECRET` in GitHub, using short-lived tokens for each deployment instead. There is a youtube video on how to do this: https://www.youtube.com/watch?v=10ljwwJ3V30  
 * **Resource Balancing:** Allocate at least **2.5 GB RAM** to the container group. Running three processes (Lodestar, Prover, and Tailscale) creates higher memory pressure; a node that crashes frequently is more vulnerable to state corruption during resync.
 
 

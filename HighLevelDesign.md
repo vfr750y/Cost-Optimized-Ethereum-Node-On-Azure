@@ -9,7 +9,7 @@ This high level design specifies all relevant components of the proposed solutio
 erDiagram
     USER ||--o{ WALLET : "manages"
     WALLET ||--o{ PROVER_PROXY : "connects to"
-    PROVER_PROXY ||--|| LIGHT_CLIENT : "queries / verifies"
+    PROVER_PROXY ||--|| P2p_NETWORK : "queries / verifies"
     LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
 ```
 
@@ -20,11 +20,12 @@ An individual user acts as the owner of their private keys. A User must exist fo
 2. **Wallet to Prover Proxy:**
 The Wallet uses its private key to digitally sign data payloads, transforming them into valid Ethereum transactions. A single Wallet can generate an infinite history of Transactions. Conversely, every Transaction must be signed by exactly one Wallet to be valid on the blockchain; a transaction cannot exist without a source address and a signature. The wallet connects to a secure RPC endpoint provided by the Prover Proxy over a private Tailscale tunnel.
 
-3. **Prover Proxy to Light Client:**
-The wallet connects to a secure RPC endpoint provided by the Prover Proxy over a private Tailscale tunnel.
-
-4. **Light Client to P2P Network:**
+3. **Prover Proxy to P2P Network:**
 The node performs outbound-only connections to Ethereum peers to stay synced.
+
+4. **Standalone light client**
+The standalone light client independently maintains an unbroken, locally persisted chain of custody of the Ethereum consensus state.
+
 ## Data flow diagram
 ```mermaid
 graph TD
