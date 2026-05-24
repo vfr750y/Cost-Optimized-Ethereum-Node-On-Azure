@@ -4,7 +4,7 @@
 [![Provider: Azure](https://img.shields.io/badge/Provider-Azure-blue)](https://azure.microsoft.com/)
 [![IaC: Terraform](https://img.shields.io/badge/IaC-Terraform-purple)](https://www.terraform.io/)
 
-This project provides a **production-ready framework** to host your own Ethereum Light Nodes on Azure enabling direct blockchain interactions for a fraction of the cost of a full node without relying on a managed node provider such as Infura or Alchemy.
+This project provides a **proof of concept framework** to host your own Ethereum Light Node on Azure enabling direct blockchain interactions for a fraction of the cost of a full node without relying on a managed node provider such as Infura or Alchemy.
 
 ### 💰 Estimated Infrastructure Costs (Azure 2026)
 
