@@ -6,7 +6,7 @@
 
 This project provides a **production-ready framework** to host your own Ethereum Light Nodes on Azure enabling direct blockchain interactions for a fraction of the cost of a full node without relying on a managed node provider such as Infura or Alchemy.
 
-### 💰 Estimated Monthly Infrastructure Costs (Azure 2026)
+### 💰 Estimated Infrastructure Costs (Azure 2026)
 
 This project leverages **Azure Container Instances (ACI)** to provide a simplified, serverless, "pay-as-you-go" infrastructure. By avoiding dedicated VMs and using Tailscale for private networking, we eliminate the need for expensive Load Balancers and Public IPs and complex networking and security configuration. **The costs shown below are for 100% utilization.** The light node containerised Azure resources can be deployed when neeeded using the latest checkpoint block route to avoid startup overheads for CPU and data transfer. Stop the container group to stop billing.
 
@@ -16,7 +16,7 @@ This project leverages **Azure Container Instances (ACI)** to provide a simplifi
 | **Memory (RAM)**          | 1.5 GiB Total         | ~$6          | 3.5 GiB Total            | ~$11         |
 | **Storage (Azure Files)** | 32 GB Standard Hot    | ~$5          | 32 GB Standard Hot       | ~$5          |
 | **Networking**            | Tailscale             | $0.00        | Tailscale | $0.00        |
-| **Estimated Total** (USD) | **Max Daily: ~$1.20** | **$41**      | **Max Daily: ~$2.60**        | **$74**      |
+| **Estimated Total** (USD) | **Max Daily: ~$1.20** | **Max Monthly ~$41**      | **Max Daily: ~$2.60**        | **Max Monthly ~$74**      |
 
 
 ### 💡 Why This Architecture?
