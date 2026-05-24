@@ -16,7 +16,7 @@ This project leverages **Azure Container Instances (ACI)** to provide a simplifi
 | **Memory (RAM)**          | 1.5 GiB Total         | ~$6          | 3.5 GiB Total            | ~$11         |
 | **Storage (Azure Files)** | 32 GB Standard Hot    | ~$5          | 32 GB Standard Hot       | ~$5          |
 | **Networking**            | Tailscale             | $0.00        | Tailscale | $0.00        |
-| **Estimated Total** (USD) | **max daily: ~$1.20** | **$41**      | **Daily: ~$2.60**        | **$74**      |
+| **Estimated Total** (USD) | **Max Daily: ~$1.20** | **$41**      | **Max Daily: ~$2.60**        | **$74**      |
 
 
 ### 💡 Why This Architecture?
