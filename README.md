@@ -75,7 +75,6 @@ graph TB
 
 ---
 
-## 
 ## 🚀 Deployment in 4 stages:
 1. **Bootstrap:** Azure infrastructure and Service Principal
 2. **Configure GitHub secrets:** Add github secrets for your environment.
@@ -83,10 +82,6 @@ graph TB
 4. **Verify** Check log files, container logs, and test RPC for wallet connectivity.
 
 ---
-
-## 💼 Need a Custom Solution? 
-I specialize in helping Enterprises scale their infrastructure while minimizing cloud spend. 
-[**Hire me on Upwork for your Web3 DevOps needs**]
 
 ## Further documentation
 
