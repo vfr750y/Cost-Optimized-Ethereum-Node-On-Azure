@@ -8,16 +8,8 @@ This high level design specifies all relevant components of the proposed solutio
 ```mermaid
 erDiagram
     USER ||--o{ WALLET : "manages"
-    WALLET ||--o{ PROVER_PROXY : "connects to"
-    PROVER_PROXY ||--|| P2p_NETWORK : "queries / verifies"
-    LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
-```
-```mermaid
-erDiagram
-    USER ||--o{ WALLET : "manages"
     USER ||--o{ LIGHT_CLIENT : "queries (via Tailnet)"
     WALLET ||--o{ PROVER_PROXY : "connects to"
-    PROVER_PROXY ||--o{ LIGHT_CLIENT : "requests trusted state"
     LIGHT_CLIENT ||--o{ P2P_NETWORK : "outbound sync with"
     PROVER_PROXY ||--o{ P2P_NETWORK : "fetches execution data"
 ```
