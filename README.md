@@ -75,7 +75,7 @@ graph TB
 
 ---
 
-## 🚀 Deployment in 4 stages:
+## 🚀 Deployment in 4 stages: (See ![As built document](AsBuilt.md))
 1. **Bootstrap:** Azure infrastructure and Service Principal
 2. **Configure GitHub secrets:** Add github secrets for your environment.
 3. **Deploy:** `terraform apply` via GitHub actions
