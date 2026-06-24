@@ -42,60 +42,6 @@ graph TD
     
     %% Storage Persistence
     L --- SA
-    T --- SA
-
-    %% Private Access Flow (Inbound via Tunnel)
-    subgraph Private_Mesh [Tailscale Mesh Network]
-        Remote_User[User Wallet]
-    end
-
-    Remote_User == "Secure WireGuard Tunnel" ==> T
-    
-    %% Internal Logic (Localhost)
-    T -. "Localhost" .-> P
-    P -. "Verify via Localhost" .-> L
-
-    %% High-Contrast Styling
-    style ACI_Group fill:#1a237e,stroke:#ffffff,stroke-width:2px,color:#ffffff %% Deep Navy Blue
-    style Private_Mesh fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
-    
-    style L fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
-    style P fill:#1565c0,stroke:#ffffff,color:#ffffff %% Ocean Blue
-    style T fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
-    style Remote_User fill:#37474f,stroke:#ffffff,color:#ffffff %% Slate Grey
-    
-    style Internet fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
-    style Provider fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
-    style GitHub_Actions fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
-```
-```mermaid
-graph TD
-    subgraph GitHub_Actions [GitHub Actions CI/CD]
-        A[Push to Main] --> B[Terraform Plan/Apply]
-    end
-
-    subgraph Azure_Cloud [Azure Subscription]
-        direction TB
-        
-        subgraph ACI_Group [Container Group: Dark Node]
-            direction LR
-            L[Lodestar Light Client]
-            P[Prover Proxy]
-            T[Tailscale Sidecar]
-        end
-
-        SA[(Azure Storage Account)]
-    end
-
-    %% Deployment Flow
-    B -- "Configures Resources" --> ACI_Group
-    
-    %% Internet Traffic Flow (Outbound Only)
-    L -- "Outbound P2P Sync" --> Internet((Ethereum Network))
-    P -- "Fetch Data" --> Provider((Untrusted EL RPC))
-    
-    %% Storage Persistence
-    L --- SA
 
     %% Private Access Flow (Inbound via Tunnel)
     subgraph Private_Mesh [Tailscale Mesh Network]
