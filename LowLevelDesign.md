@@ -96,7 +96,6 @@ graph TD
     
     %% Storage Persistence
     L --- SA
-    T --- SA
 
     %% Private Access Flow (Inbound via Tunnel)
     subgraph Private_Mesh [Tailscale Mesh Network]
@@ -121,19 +120,6 @@ graph TD
     style Internet fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
     style Provider fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
     style GitHub_Actions fill:#2e7d32,stroke:#ffffff,color:#ffffff %% Forest Green
-```
-
-### Terraform Configuration (backend.tf)
-
-```hcl
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "rg-lodestar-node"
-    storage_account_name = "stethterraformstate"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
-  }
-}
 ```
 
 ### Terraform Configuration (main.tf)
