@@ -106,8 +106,8 @@ graph TD
     Remote_User == "Secure WireGuard Tunnel" ==> T
     
     %% Internal Logic (Localhost)
+    T -. "Localhost" .-> P
     T -. "Localhost" .-> L
-    P -. "Verify via Localhost" .-> L
 
     %% High-Contrast Styling
     style ACI_Group fill:#1a237e,stroke:#ffffff,stroke-width:2px,color:#ffffff %% Deep Navy Blue
